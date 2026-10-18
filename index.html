@@ -35,8 +35,133 @@ p{opacity:.7;font-size:12px;margin:12px 0 0}
 #ambienteControls{border-top:1px solid var(--bd);margin-top:10px;padding-top:8px}#ambienteControls select{width:100%;padding:9px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--fg);font:inherit;margin:4px 0 8px}#ambienteControls .hint{font-size:11px;opacity:.7;margin:0 0 7px}
 html,body,#app,#cv,#pn,#opt,#sel,#hud,button{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}input,textarea,select{-webkit-user-select:text;user-select:text}canvas{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .pfx{position:absolute;z-index:9;pointer-events:none;font-size:22px;animation:pf 1.3s ease-out forwards}@keyframes pf{from{opacity:1;transform:translate(-50%,0) scale(.6)}to{opacity:0;transform:translate(-50%,-70px) scale(1.2)}}
-</style></head><body><div id="app"><div id="cv"></div><aside id="pn"></aside></div>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+#fpBtn{position:absolute;left:10px;bottom:44px;z-index:6;padding:7px 13px;font-size:13px;border-radius:999px;border-color:var(--ac);background:var(--pn);box-shadow:0 4px 12px #0004}
+#fpExit,#fpNight{position:absolute;top:12px;z-index:8;display:none;border-color:var(--ac);background:var(--pn);box-shadow:0 4px 14px #0004}
+#fpExit{left:12px;padding:8px 14px;border-radius:999px}#fpNight{right:12px;width:44px;height:44px;padding:0;font-size:20px;border-radius:50%}
+#fpJoy{position:absolute;left:calc(18px + env(safe-area-inset-left,0px));bottom:28px;width:124px;height:124px;border-radius:50%;background:#0e8a7d33;border:2px solid var(--ac);touch-action:none;display:none;z-index:8}
+#fpKnob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:var(--ac);opacity:.9;box-shadow:0 3px 10px #0005;pointer-events:none}
+#fpHint{position:absolute;left:50%;bottom:164px;transform:translateX(-50%);max-width:86%;text-align:center;padding:6px 14px;border-radius:999px;background:var(--pn);border:2px solid var(--ac);font-size:12px;opacity:0;transition:opacity .4s;pointer-events:none;z-index:9}
+body.fp #fpBtn{display:none}body.fp #fpExit,body.fp #fpNight{display:block}body.fp #fpJoy{display:block}
+body.fp #pn,body.fp #sel,body.fp #hud,body.fp #ob,body.fp #opt,body.fp #pwaInstallBtn,body.fp #shelfModal{display:none!important}
+select,input[type=text],textarea{font-size:16px!important}
+</style><style id="responsive-shell">
+:root{--shell-line:#d8e4e4;--shell-shadow:0 16px 42px #0827281c}
+html,body{width:100%;height:100%;min-height:0;overflow:hidden}
+#app{display:grid;grid-template-rows:auto minmax(0,1fr);height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:0;overflow:hidden}
+#topbar{position:relative;z-index:15;display:flex;align-items:center;gap:clamp(14px,2vw,30px);min-height:78px;padding:10px max(18px,env(safe-area-inset-left,0px)) 10px max(18px,env(safe-area-inset-right,0px));background:linear-gradient(110deg,#102e35,#0b6059 72%,#087c70);color:#f2fffb;box-shadow:0 5px 22px #102e3533}
+.brand{display:flex;align-items:center;gap:11px;min-width:190px}
+.brand-mark{display:grid;place-items:center;width:46px;height:46px;border-radius:15px;background:#ffffff1d;border:1px solid #ffffff2c;font-size:25px}
+.brand-copy strong,.brand-copy small{display:block}.brand-copy strong{font-size:16px;letter-spacing:.2px}.brand-copy small{margin-top:3px;color:#c9e4df;font-size:11px;font-weight:500}
+.topbar-room,.topbar-career{min-width:0;display:flex;flex-direction:column;gap:5px;padding:8px 13px;border:1px solid #ffffff25;border-radius:14px;background:#ffffff0d}
+.topbar-room{margin-left:auto;max-width:370px}.topbar-career{width:min(310px,28vw)}
+.eyebrow{font-size:9px;line-height:1;letter-spacing:1.25px;font-weight:800;color:#a9d9d1}
+#roomStatus{min-width:0}.topbar #hud{position:static;display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0;border:0;border-radius:0;background:transparent;box-shadow:none;color:#f5fffc;font-size:12px;font-weight:700}
+#economyStatus{min-width:0}.topbar #eco{position:static;display:flex!important;align-items:center;justify-content:flex-start;width:100%;padding:0;border:0;background:transparent;color:#f5fffc;box-shadow:none;text-align:left;white-space:nowrap;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#headerActions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+#topbar #ob{position:static;z-index:auto;width:44px;height:44px;padding:0;border:1px solid #ffffff3b;border-radius:13px;background:#ffffff18;color:#fff;font-size:20px;box-shadow:none}
+#topbar #pwaInstallBtn{position:static;display:inline-flex;align-items:center;justify-content:center;width:auto;min-height:42px;padding:8px 11px;border:1px solid #ffffff35;border-radius:13px;background:#ffffff17;color:#fff;font:700 12px system-ui,sans-serif;box-shadow:none}
+#workspace{display:grid;grid-template-columns:minmax(0,1fr) 354px;min-width:0;min-height:0;overflow:hidden;background:var(--bg)}
+#stage{position:relative;min-width:0;min-height:0;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#edf7f4 0%,#dce9e8 100%)}
+#cv{width:100%;height:100%;min-width:0;min-height:0;position:relative;overflow:hidden}
+#cv canvas{width:100%;height:100%}
+#pn{box-sizing:border-box;width:auto;height:auto;max-height:none;min-width:0;min-height:0;overflow:auto;padding:16px 15px 24px;background:var(--pn);border:0;border-left:1px solid var(--shell-line);box-shadow:-10px 0 30px #162f3310;overscroll-behavior:contain;scrollbar-gutter:stable}
+#pn h3{margin:13px 0 10px;font-size:17px;letter-spacing:.1px}
+#pn .tabs{position:sticky;top:-16px;z-index:4;display:flex;flex-wrap:wrap;gap:5px;margin:-16px -15px 14px;padding:12px 12px 10px;background:var(--pn);border-bottom:1px solid var(--shell-line);box-shadow:0 6px 12px #152f330a}
+#pn .tabs button{flex:1 1 42px;min-width:42px;padding:7px 3px;border-radius:10px;font-size:19px}
+#pn .g{gap:8px}
+#pn .card{min-height:82px;padding:9px 6px;border-radius:14px;background:var(--bg);background:color-mix(in srgb,var(--bg) 70%,var(--pn));border:1px solid var(--shell-line);border-bottom-width:2px;box-shadow:0 2px 6px #1833330a}
+#pn .card:hover{transform:translateY(-1px);box-shadow:0 5px 12px #18333314}
+#pn .card i{font-size:24px}#pn .card span{font-size:11px;line-height:1.25}
+#cv #sel{position:absolute;left:16px;top:16px;bottom:auto;z-index:10;box-sizing:border-box;width:340px;max-width:calc(100% - 32px);max-height:calc(100% - 32px);overflow:auto;padding:14px 16px 18px;background:var(--pn);border:1px solid var(--shell-line);border-left:4px solid var(--ac);border-radius:20px;box-shadow:var(--shell-shadow);scrollbar-gutter:stable;overscroll-behavior:contain}
+#cv #sel h3{font-size:16px;line-height:1.25;margin:0;color:var(--fg)}
+#cv #selHeader{display:flex;align-items:center;gap:7px;margin:0 0 12px}
+#cv #selHeader h3{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#cv #sel button{min-height:38px;padding:7px 10px;border-radius:11px;font-size:12px;border-bottom-width:2px}
+#cv #sel #moreOptions,#cv #sel #selClose{flex:0 0 36px;width:36px;height:36px;min-height:36px;padding:0;font-size:19px;line-height:1}
+#cv #sel label{gap:9px;margin:8px 0;font-size:12px}
+#cv #sel label span{width:88px!important;min-width:82px;font-size:11px!important}
+#cv #sel label b{font-size:11px}
+#cv #sel label input[type=range]{min-width:70px;accent-color:var(--ac)}
+#cv #sel input[type=color]{width:34px;height:30px}
+#cv #sel select{width:100%;margin:6px 0!important;padding:9px!important;border:1px solid var(--shell-line);border-radius:11px!important;background:var(--bg);color:var(--fg);font:inherit;font-size:13px!important}
+#cv #sel .g{grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:8px}
+#cv #sel #extraOptions{padding-top:9px;border-top:1px solid var(--shell-line)}
+#cv #sel #moreOptions{margin:0}
+#cv #ob{position:absolute;top:16px;right:16px;width:46px;height:46px;border-radius:15px;border-color:var(--shell-line);background:var(--pn);box-shadow:0 5px 14px #0002}
+#cv #opt{top:72px;right:16px;width:260px;max-height:calc(100% - 90px);border-color:var(--shell-line);border-radius:18px;box-shadow:var(--shell-shadow)}
+#cv #hud{pointer-events:none}
+body.fp #topbar{display:none!important}
+@media(max-width:1050px){#workspace{grid-template-columns:minmax(0,1fr) 320px}.brand{min-width:170px}.topbar-career{width:min(270px,26vw)}}
+@media(max-width:760px){
+ #app{height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))}
+ #topbar{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"brand actions" "room career";gap:8px 10px;min-height:0;padding:9px max(10px,env(safe-area-inset-left,0px))}
+ .brand{grid-area:brand;min-width:0;gap:8px}.brand-mark{width:38px;height:38px;border-radius:12px;font-size:21px}.brand-copy strong{font-size:14px}.brand-copy small{display:none}
+ .topbar-room{grid-area:room;margin-left:0;max-width:none}.topbar-career{grid-area:career;width:auto;min-width:0}
+ .topbar-room,.topbar-career{gap:4px;padding:6px 8px;border-radius:11px}.eyebrow{font-size:8px;letter-spacing:1px}
+ .topbar #hud,.topbar #eco{font-size:10px}
+ #headerActions{grid-area:actions;gap:6px}#topbar #ob{width:40px;height:40px;border-radius:12px}
+ #topbar #pwaInstallBtn{min-height:40px;padding:7px 8px;border-radius:12px;font-size:11px}
+ #workspace{display:flex;flex-direction:column}
+ #stage{flex:0 0 42%;min-height:205px}
+ #pn{flex:1 1 0;min-height:0;padding:12px 11px 20px;border-left:0;border-top:1px solid var(--shell-line);box-shadow:0 -8px 24px #162f330b}
+ #pn .tabs{top:-12px;margin:-12px -11px 11px;padding:8px 8px 9px}
+ #cv #sel{display:none;position:fixed;top:auto;right:10px;bottom:max(10px,env(safe-area-inset-bottom,0px));left:10px;width:auto;max-width:none;max-height:min(56dvh,500px);padding:13px 13px max(15px,env(safe-area-inset-bottom,0px));border-radius:20px;box-shadow:0 14px 50px #001c1a55;z-index:50}
+ #cv #sel[style*="display: block"]{display:block!important}
+ body.fp #cv #sel{display:none!important}
+ #cv #sel label{gap:7px;margin:7px 0}
+ #cv #sel label span{width:78px!important;min-width:72px}
+ #cv #opt{top:66px;right:10px;width:min(270px,calc(100% - 20px));max-height:calc(100% - 78px)}
+ #cv #ob{top:10px;right:10px;width:42px;height:42px}
+}
+@media(max-width:390px){#topbar{gap:7px 7px;padding-inline:8px}.brand-copy strong{font-size:13px}#topbar #pwaInstallBtn{font-size:10px;padding-inline:7px}.topbar-room,.topbar-career{padding-inline:6px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+</style>
+<style id="career-ui">
+.topbar-career{width:min(360px,30vw);min-width:270px;gap:6px}.career-values{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.career-values strong{font-size:18px;letter-spacing:.2px}.career-values span{font-size:12px;font-weight:800;color:#dcf8ef}.career-xp{display:flex;align-items:center;gap:8px}.career-xp>span{font-size:10px;white-space:nowrap;color:#d8eeea}.xp-track{height:7px;min-width:60px;flex:1;overflow:hidden;border-radius:9px;background:#ffffff30}.xp-track i{display:block;width:0;height:100%;border-radius:inherit;background:#b7ff71;transition:width .25s ease}.project-score{display:flex;align-items:center;justify-content:space-between;gap:8px;border-top:1px solid #ffffff22;padding-top:5px}.project-score .eyebrow{font-size:8px}.topbar #eco{width:auto;margin-left:auto;font-size:10px;opacity:.92}
+#careerNav{display:grid;grid-template-columns:1.1fr 1fr .8fr;gap:7px;margin:0 0 12px}#careerNav button{min-width:0;min-height:44px;padding:8px 6px;border:0;border-radius:13px;color:#f4fffb;font-size:12px;line-height:1.2;box-shadow:0 4px 12px #0e695523}#careerNav .career-nav-primary{background:linear-gradient(135deg,#0b8a7d,#17665d)}#careerNav .career-nav-secondary{background:linear-gradient(135deg,#325a64,#243d47)}#careerNav .career-nav-shop{background:linear-gradient(135deg,#cb9a36,#a56d13)}#careerNav button.active{outline:2px solid #f1c86a;outline-offset:1px}#pn .tabs{display:none}#pn.shop-open .tabs{display:flex;max-height:min(30vh,230px);overflow:auto;overscroll-behavior:contain}#pn.shop-open .tabs button{flex:0 0 46px;min-width:46px}
+#pn .card em.pr{display:block;font-style:normal;font-size:10px;opacity:.85;color:var(--ac)}#pn .card .level-requirement{display:block;font-style:normal;font-size:9px;line-height:1.2;opacity:.72}#pn .card.locked{opacity:.62;filter:grayscale(.38)}#pn .card.locked .level-requirement{color:#ab5a2b;opacity:1}
+#careerFallback{padding:2px 0 12px}#careerFallback[hidden],#careerFallback [hidden]{display:none!important}#careerFallback h3{margin:4px 0 8px;color:var(--ac);font-size:18px}#careerFallback .career-intro{margin-bottom:12px}.career-page h3{margin:4px 0 8px}.career-intro{margin:0 0 12px;font-size:12px;opacity:.76;line-height:1.4}.career-block{margin:0 0 12px;padding:13px;border:1px solid var(--bd);border-radius:16px;background:var(--pn);background:color-mix(in srgb,var(--bg) 72%,var(--pn));box-shadow:0 5px 15px #1833330b}.career-block h4{margin:0 0 7px;color:var(--ac);font-size:14px}.career-block p{font-size:12px;line-height:1.45;margin:5px 0}.career-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}.career-actions button{flex:1 1 145px;min-height:40px;border-radius:12px}.career-primary{background:var(--ac);color:#fff;border-color:var(--ac)}.career-muted{font-size:10px;opacity:.72}.career-stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:8px 0}.career-stat{padding:9px 7px;text-align:center;border:1px solid var(--bd);border-radius:12px;background:var(--bg)}.career-stat b,.career-stat span{display:block}.career-stat b{font-size:17px;color:var(--ac)}.career-stat span{font-size:9px;line-height:1.2;margin-top:3px;opacity:.75}.mission-card{border-left:4px solid #d49d32}.mission-title{font-size:16px!important;color:var(--fg)!important}.mission-meta{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.mission-chip{display:inline-flex;align-items:center;padding:5px 8px;border-radius:999px;background:var(--bg);font-size:10px;font-weight:800}.mission-req{display:grid;gap:6px;margin:9px 0}.mission-req-row{display:flex;justify-content:space-between;gap:8px;padding:7px 8px;border-radius:10px;background:var(--bg);font-size:11px}.mission-req-row b{white-space:nowrap}.mission-req-row.done{color:#13745e}.mission-budget{height:8px;margin:6px 0 2px;border-radius:8px;background:var(--bd);overflow:hidden}.mission-budget i{display:block;height:100%;background:#d49d32}.mission-budget i.over{background:#d54b4b}.mission-list{display:grid;gap:6px}.mission-history-row{padding:8px 9px;border-radius:10px;background:var(--bg);font-size:11px}.mission-empty{padding:14px;border:1px dashed var(--bd);border-radius:14px;text-align:center;font-size:12px;opacity:.7}
+@media(max-width:760px){.topbar-career{width:auto;min-width:0;gap:4px}.career-values strong{font-size:14px}.career-values span{font-size:10px}.career-xp{gap:6px}.career-xp>span{font-size:9px}.project-score{padding-top:3px}.project-score .eyebrow{font-size:7px}#topbar #eco{font-size:9px}.career-block{padding:11px}.career-actions button{flex-basis:125px}#careerNav{grid-template-columns:1.1fr 1fr .8fr;margin-bottom:10px}#careerNav button{padding:7px 4px;font-size:10px;min-height:42px}}
+@media(prefers-reduced-motion:reduce){.xp-track i{transition:none}}
+</style></head><body><div id="app"><header id="topbar"><div class="brand"><span class="brand-mark" aria-hidden="true">🛋️</span><div class="brand-copy"><strong>Estúdio de quartos</strong><small>Designer 3D · o teu espaço, ao teu estilo</small></div></div><div class="topbar-room"><span class="eyebrow">DIVISÃO · TAMANHO · OBJETOS</span><div id="roomStatus"><span id="hud">A preparar o quarto…</span></div></div><div class="topbar-career"><span class="eyebrow">CARREIRA · SALDO + XP</span><div id="careerHud" aria-live="polite"><div class="career-values"><strong id="careerBalance">€750</strong><span id="careerLevel">Nível 1</span></div><div class="career-xp"><span id="careerXPText">0 / 150 XP</span><div class="xp-track"><i id="careerXPBar"></i></div></div></div><div class="project-score"><span class="eyebrow">PONTUAÇÃO DO QUARTO</span><div id="economyStatus"><span>A carregar…</span></div></div></div><div id="headerActions" aria-label="Ações do estúdio"></div></header><div id="workspace"><section id="stage" aria-label="Vista 3D do quarto"><div id="cv"></div></section><aside id="pn" aria-label="Ferramentas e catálogo"><nav id="careerNav" aria-label="Navegação da carreira"><button id="careerNavHome" class="career-nav-primary" type="button">🏠 O Meu Quarto</button><button id="careerNavJobs" class="career-nav-secondary" type="button" aria-label="Trabalhos e clientes">📋 Clientes</button><button id="careerNavShop" class="career-nav-shop" type="button" aria-label="Abrir a loja e as ferramentas" aria-expanded="false">🛍️ Loja</button></nav>
+<section id="careerFallback" aria-label="Carreira e missões">
+  <div id="careerFallbackHome">
+    <h3>✨ A tua carreira</h3>
+    <p class="career-intro">Decora o teu quarto, aceita pedidos de clientes e ganha dinheiro e experiência para desbloquear mais móveis.</p>
+    <div class="career-stat-grid"><div class="career-stat"><b>€750</b><span>SALDO INICIAL</span></div><div class="career-stat"><b>Nível 1</b><span>PROGRESSO</span></div><div class="career-stat"><b>0</b><span>TRABALHOS</span></div></div>
+    <section class="career-block mission-card"><h4 id="careerFallbackTitle">📋 Pedido de cliente</h4><p id="careerFallbackBrief">A preparar um novo pedido…</p><div id="careerFallbackMeta" class="mission-meta"></div><div class="career-actions"><button id="careerFallbackAccept" class="career-primary" type="button">Aceitar pedido</button><button id="careerFallbackGenerate" type="button">Outro cliente</button></div></section>
+    <p class="career-muted">Usa “Trabalhos / Clientes” para ver os objetivos, o orçamento e as recompensas.</p>
+  </div>
+  <div id="careerFallbackJobs" hidden>
+    <h3>📋 Trabalhos / Clientes</h3>
+    <p class="career-intro">Cada cliente traz uma missão diferente. Cumpre os objetivos sem ultrapassar o orçamento para receber o pagamento e XP.</p>
+    <section class="career-block mission-card"><h4 id="careerFallbackJobTitle">Pedido disponível</h4><p id="careerFallbackJobBrief"></p><div id="careerFallbackJobMeta" class="mission-meta"></div><div id="careerFallbackRequirements" class="mission-req"></div><div class="career-actions"><button id="careerFallbackJobAccept" class="career-primary" type="button">Aceitar pedido</button><button id="careerFallbackJobGenerate" type="button">Gerar outro cliente</button></div></section>
+  </div>
+</section></aside></div></div>
+<script>
+(()=>{
+ const $=id=>document.getElementById(id),home=$('careerFallbackHome'),jobs=$('careerFallbackJobs'),homeNav=$('careerNavHome'),jobsNav=$('careerNavJobs'),shopNav=$('careerNavShop');
+ const offers=[
+  {icon:'🎮',title:'Quarto gamer',style:'neon',needs:['2 ecrãs','1 luz de ambiente','1 cadeira confortável'],budget:2450,xp:95},
+  {icon:'📚',title:'Estúdio de estudo',style:'escandinavo',needs:['1 secretária','1 cadeira','1 ecrã ou portátil','1 candeeiro'],budget:1900,xp:85},
+  {icon:'🐈',title:'Espaço para gatos',style:'natural',needs:['2 arranhadores','1 cama para gato','1 peça para os gatos'],budget:2100,xp:90},
+  {icon:'🌿',title:'Oásis de plantas',style:'mediterrânico',needs:['3 plantas','1 janela','1 prateleira'],budget:1750,xp:80},
+  {icon:'🛏️',title:'Quarto acolhedor',style:'pastel',needs:['1 cama ou sofá','1 tapete','1 luz suave','1 planta ou flores'],budget:2200,xp:85},
+  {icon:'🎙️',title:'Estúdio de streaming',style:'industrial',needs:['2 ecrãs','1 microfone','1 cadeira gamer','1 luz RGB'],budget:3400,xp:125}
+ ];
+ const first=['Inês','Marta','Leonor','Sofia','Rita','Tomás','Miguel','Tiago','Rafael','Joana','Diana','Afonso'],last=['Silva','Costa','Pereira','Santos','Ribeiro','Moreira','Lopes','Ferreira'];
+ let offer;
+ function render(){offer=offers[Math.floor(Math.random()*offers.length)];const client=first[Math.floor(Math.random()*first.length)]+' '+last[Math.floor(Math.random()*last.length)],reward=Math.round(offer.budget*.55+250),title=offer.icon+' '+offer.title,brief=`${client} procura ${offer.title.toLowerCase()} em estilo ${offer.style}. Mantém o custo dentro do orçamento.`;
+  $('careerFallbackTitle').textContent=title;$('careerFallbackBrief').textContent=brief;$('careerFallbackJobTitle').textContent=title;$('careerFallbackJobBrief').textContent=brief;
+  for(const id of ['careerFallbackMeta','careerFallbackJobMeta']){const box=$(id);box.textContent='';for(const text of [`Orçamento €${offer.budget}`,`Pagamento €${reward}`,`+${offer.xp} XP`,`Estilo ${offer.style}`]){const chip=document.createElement('span');chip.className='mission-chip';chip.textContent=text;box.append(chip)}}
+  const req=$('careerFallbackRequirements');req.textContent='';for(const text of offer.needs){const row=document.createElement('div');row.className='mission-req-row';row.textContent='⬜ '+text;req.append(row)}
+ }
+ const show=which=>{home.hidden=which!=='home';jobs.hidden=which!=='jobs';homeNav.classList.toggle('active',which==='home');jobsNav.classList.toggle('active',which==='jobs');document.getElementById('pn').scrollTop=0};
+ homeNav.onclick=()=>show('home');jobsNav.onclick=()=>show('jobs');shopNav.onclick=()=>{const open=document.getElementById('pn').classList.toggle('shop-open');shopNav.textContent=open?'✕ Fechar loja':'🛍️ Loja';shopNav.setAttribute('aria-expanded',String(open))};$('careerFallbackGenerate').onclick=render;$('careerFallbackJobGenerate').onclick=render;
+ $('careerFallbackAccept').onclick=()=>{show('jobs');$('careerFallbackJobBrief').textContent+=' Pedido aceite. Abre o editor e começa a decorar.'};$('careerFallbackJobAccept').onclick=()=>{$('careerFallbackJobBrief').textContent+=' Pedido aceite. Abre o editor e começa a decorar.'};
+ render();show('home');
+})();
+</script><script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 const S={W:4.5,D:4,H:2.6},items=[];const PQ={Baixa:{n:4,c:14,sr:10,pr:1,sh:0,ol:0,env:0},'Média':{n:4,c:24,sr:20,pr:1.5,sh:1024,ol:1,env:1},Alta:{n:8,c:40,sr:32,pr:2,sh:2048,ol:1,env:1}},Q=Object.assign({},PQ[/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent)?'Média':'Alta']);let cur=null,night=false;
@@ -468,13 +593,13 @@ function putOnShelf(){
  confirm.onclick=()=>{if(!chosenShelf||chosenLevel===null)return;const g=cur,shelf=chosenShelf,level=chosenLevel;const box=new THREE.Box3().setFromObject(g),size=box.getSize(new THREE.Vector3()),shelfBox=new THREE.Box3().setFromObject(shelf),shelfSize=shelfBox.getSize(new THREE.Vector3());const idx=levels.indexOf(level),prev=idx>0?level-levels[idx-1]:Infinity,next=idx<levels.length-1?levels[idx+1]-level:Infinity;const gap=Math.min(prev,next),safeHeight=Number.isFinite(gap)?Math.max(.12,gap*.78):.3;const factor=Math.min(1,Math.max(.12,shelfSize.x*.78)/Math.max(size.x,.001),Math.max(.12,shelfSize.z*.78)/Math.max(size.z,.001),safeHeight/Math.max(size.y,.001));if(factor<1)g.scale.multiplyScalar(factor);g.userData.wall=null;g.userData.t=null;g.rotation.y=shelf.rotation.y;g.position.x=shelf.position.x;g.position.z=shelf.position.z;const bb=new THREE.Box3().setFromObject(g);g.userData.y=shelf.position.y+level-(bb.min.y-g.position.y)+.012;g.position.y=g.userData.y;place(g);if(g.userData.proj){g.userData.pitch=typeof g.userData.pitch==='number'?g.userData.pitch:-.3;g.userData.head.rotation.x=g.userData.pitch;}pick(g);close();};
 }
 
-const moreBtn=bt('⋯',()=>{const open=extra.style.display==='block';extra.style.display=open?'none':'block';moreBtn.title=open?'Ver mais opções':'Ocultar opções';moreBtn.setAttribute('aria-label',moreBtn.title)});moreBtn.id='moreOptions';moreBtn.title='Ver mais opções';const selHeader=ce('div',sd);selHeader.id='selHeader';selHeader.append(nm,moreBtn);const extra=ce('div',sd);extra.id='extraOptions';extra.style.display='none';
+const moreBtn=bt('⋯',()=>{const open=extra.style.display==='block';extra.style.display=open?'none':'block';moreBtn.title=open?'Ver mais opções':'Ocultar opções';moreBtn.setAttribute('aria-label',moreBtn.title)});moreBtn.id='moreOptions';moreBtn.title='Ver mais opções';const selHeader=ce('div',sd);selHeader.id='selHeader';selHeader.append(nm,moreBtn);const closeSel=bt('×',()=>pick(null),selHeader);closeSel.id='selClose';closeSel.title='Fechar propriedades';closeSel.setAttribute('aria-label','Fechar propriedades do objeto');const extra=ce('div',sd);extra.id='extraOptions';extra.style.display='none';
 const shelfBtn=bt('📚 Colocar na estante',putOnShelf,extra);shelfBtn.style.width='100%';shelfBtn.style.margin='2px 0 6px';
 const floorLedBtn=bt('↘ Pôr fita LED no chão',()=>{if(!cur||cur.userData.name!=='Fita LED')return;const g=cur,u=g.userData;u.wall=null;u.t=null;u.fall=false;g.rotation.y=0;const before=bbox(g);const bottomOffset=before.min.y-g.position.y;u.y=.012-bottomOffset;g.position.y=u.y;place(g);g.position.y=u.y;u.fall=false;hS.set(u.y);sel.setFromObject(g);lst() },extra);floorLedBtn.style.cssText='display:none;width:100%;margin:2px 0 6px;padding:8px;border-radius:8px;background:#5b35a6;color:white;border:0;font-weight:600';
 [rw,hS.parentNode,sS.parentNode,pS.parentNode,zS.parentNode,cc,sw,ms,ts.parentNode,delBtn].filter(Boolean).forEach(n=>{if(n.parentNode===sd)extra.append(n)});
 const tabs=ce('div',pn),pgs={};tabs.className='tabs';
-function pg(n,i){const d=ce('div',pn);d.style.display='none';const b=bt(i,()=>{const o=pgs[n].style.display=='none';for(const k in pgs){const s=o&&k==n;pgs[k].style.display=s?'':'none';pgs[k].b.classList.toggle('on',s)}pn.classList.toggle('shut',!o)},tabs);b.title=n;d.b=b;pgs[n]=d;return d}
-const hud=ce('div',cv);hud.id='hud';function hu(){hud.textContent=`${RM[ri].name} · ${S.W.toFixed(1)}×${S.D.toFixed(1)}×${S.H.toFixed(1)}m · ${items.length} obj`}
+function pg(n,i){const d=ce('div',pn);d.style.display='none';const b=bt(i,()=>{const o=pgs[n].style.display=='none';for(const k in pgs){const s=o&&k==n;pgs[k].style.display=s?'':'none';pgs[k].b.classList.toggle('on',s)}pn.classList.toggle('shut',!o);pn.classList.remove('shop-open');const shopNav=document.getElementById('careerNavShop');if(shopNav){shopNav.textContent='🛍️ Loja';shopNav.setAttribute('aria-expanded','false')}},tabs);b.title=n;d.b=b;pgs[n]=d;return d}
+const hud=document.getElementById('hud');hud.title='Nome da divisão, medidas em metros (largura × comprimento × altura) e número de objetos.';function hu(){hud.textContent=`${RM[ri].name} · ${S.W.toFixed(1)} × ${S.D.toFixed(1)} × ${S.H.toFixed(1)} m · ${items.length} objetos`}
 const ic=(k,d)=>[[/^Cão/,'🐕'],[/^Gato/,'🐈'],[/Coelho/,'🐇'],[/Hamster/,'🐹'],[/Porquinho/,'🐹'],[/Tartaruga/,'🐢'],[/pássaros|papagaio/,'🦜'],[/Aquário/,'🐠'],[/Cama de (cão|gato)|Cesto de gato|Casota|Arranhador|Taças/,'🐾'],[/Cacto|Suculenta|Aloé/,'🌵'],[/Palmeira|Bananeira/,'🌴'],[/Bambu/,'🎋'],[/Rosas|Tulipas|Hortênsia|Orquídea|Girassol|Lavanda|Violeta|flores/,'🌸'],[/Bonsai|Fícus|Oliveira|Limoeiro|Pinheiro/,'🌳'],[/Ervas|Monstera|Dracena|Sansevieria|Terrário/,'🌿'],[/Feto|Hera|aranha|suspensa/,'🍃'],[/Frigor/,'🧊'],[/Fogão/,'🔥'],[/Banheira|duche|Sanita|Lavat|Toalh/i,'🚿'],[/Berço|Cabana|Brinq|criança|atividades/i,'🧸'],[/Cesto|Sapat|Cabide/,'🧺'],[/Auscult/,'🎧'],[/VR/,'🥽'],[/Microfone/,'🎙️'],[/Teclado|Rato/,'⌨️'],[/Velas/,'🕯️'],[/Lanterna/,'🏮'],[/Globo/,'🔮'],[/Cama|Beliche/,'🛏️'],[/Cadeira/,'🪑'],[/Estante|ivros/,'📚'],[/Planta|Cato/,'🪴'],[/Projetor/,'📽️'],[/TV|Monitor/,'📺'],[/Consola|Comando/,'🎮'],[/Coluna|Soundbar/,'🔊'],[/Computador|Portátil/,'💻'],[/Janela|Cortinas/,'🪟'],[/Porta/,'🚪'],[/Espelho/,'🪞'],[/Quadro|Galeria/,'🖼️'],[/LED|Néon|fada/,'✨'],[/Candeeiro/,'💡'],[/Tapete/,'🟥'],[/Relógio/,'🕐'],[/Mesa/,'🍽️']].find(([r])=>r.test(k))?.[1]||d;
 P=pg('Quarto','🏠');hd('Divisões');
 const RT={'Quarto':[4.5,4,2.6,'#e9e3d8','#b98b5e',[['Cama',-1.2,-.95],['Janela',0,.3],['Porta',1,1],['Roupeiro',1.7,-1.6]]],
@@ -487,7 +612,7 @@ const RT={'Quarto':[4.5,4,2.6,'#e9e3d8','#b98b5e',[['Cama',-1.2,-.95],['Janela',
 'Varanda':[4,1.8,2.6,'#e8efe0','#9a8f80',[['Mesa de exterior',0,0],['Cadeira de exterior',-.6,.2],['Cadeira de exterior',.6,.2],['Guarda-sol',1.5,-.5],['Planta alta',-1.7,-.5],['Porta-janela',1,0]]],
 'Lavandaria':[2.2,2.2,2.6,'#e3ecef','#b0b8bd',[['Máquina de lavar',-.5,-.8],['Tábua de engomar',.4,.4],['Cesto da roupa',.7,-.8],['Porta',1,0]]],
 'Garagem':[5,3,2.8,'#d8d8d8','#7b7b7b',[['Bancada de trabalho',-1,-1.2],['Prateleira metálica',1.8,-1.2],['Bicicleta',0,.3],['Caixa de ferramentas',-1,-.9],['Porta dupla',1,0]]]};
-const RM=[{name:'Quarto',S:{W:4.5,D:4,H:2.6},wc:'#e9e3d8',fc:'#b98b5e',items}];let ri=0;
+const RM=[{name:'O Meu Quarto',S:{W:4.5,D:4,H:2.6},wc:'#e9e3d8',fc:'#b98b5e',items}];let ri=0;
 const rl=ce('div');rl.className='g';rl.style.gridTemplateColumns='repeat(2,1fr)';
 const rs=ce('select');Object.keys(RT).forEach(n=>ce('option',rs).textContent=n);rs.style.cssText='width:100%;padding:8px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--fg);font:inherit;margin:8px 0 4px';
 bt('+ Adicionar divisão',()=>{const t=rs.value,[a,b,c,wc,fc,st0]=RT[t],n=RM.filter(r=>r.name.split(' #')[0]==t).length;RM.push({name:t+(n?' #'+(n+1):''),S:{W:a,D:b,H:c},wc,fc,items:[]});go(RM.length-1);st0.forEach(([k,x,z])=>mk(k,x,z));pick(null)});
@@ -506,7 +631,7 @@ ce('p').textContent='Toca duas vezes num objeto para o selecionar e arrasta para
 const ray=new THREE.Raycaster(),pl=new THREE.Plane(new THREE.Vector3(0,1,0),0),v3=new THREE.Vector3(),off=new THREE.Vector3();let drag=null,dn=null,lt0=null;const el=ren.domElement;
 const ndc=e=>{const r=el.getBoundingClientRect();ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},cam)};
 function bestHit(){const hs=ray.intersectObjects(items,true),real=hs.find(h=>!h.object.userData.hit),px=hs.find(h=>h.object.userData.hit);return real&&(!px||real.distance<=px.distance+.6)?real:(px||real)}
-el.addEventListener('pointerdown',e=>{ndc(e);dn=[e.clientX,e.clientY];const h=bestHit();if(!h)return;let g=h.object;while(!g.userData.item)g=g.parent;
+el.addEventListener('pointerdown',e=>{if(FP.on)return;ndc(e);dn=[e.clientX,e.clientY];const h=bestHit();if(!h)return;let g=h.object;while(!g.userData.item)g=g.parent;
  const t=performance.now(),dbl=lt0&&lt0.g==g&&t-lt0.t<400;lt0={g,t};if(g!=cur&&!dbl)return;pick(g);drag=g;g.userData.fall=false;ctl.enabled=false;pl.constant=-g.userData.y;if(ray.ray.intersectPlane(pl,v3))off.copy(g.position).sub(v3);el.setPointerCapture(e.pointerId)},true);
 el.addEventListener('pointermove',e=>{if(!drag)return;ndc(e);if(!ray.ray.intersectPlane(pl,v3))return;const u=drag.userData;
  const{W,D}=S,x=v3.x+off.x,z=v3.z+off.z,d=[Math.abs(z+D/2),Math.abs(z-D/2),Math.abs(x+W/2),Math.abs(x-W/2)],wi=d.indexOf(Math.min(...d)),snap=.28;
@@ -515,7 +640,7 @@ el.addEventListener('pointermove',e=>{if(!drag)return;ndc(e);if(!ray.ray.interse
  else{u.wall=null;drag.position.set(x,u.y,z);const bb=bbox(drag),e=[bb.min.z+D/2,D/2-bb.max.z,bb.min.x+W/2,W/2-bb.max.x],k=e.indexOf(Math.min(...e));if(e[k]<.12){const r=[0,Math.PI,Math.PI/2,-Math.PI/2][k];if(Math.abs(Math.sin((drag.rotation.y-r)/2))>1e-3)drag.rotation.y=r}}
  place(drag)});
 function snapToSurface(g){if(!g)return;const u=g.userData;if(['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'].includes(u.name)){u.fall=false;place(g);if(g===cur)hS.set(u.y);return;}/* Luzes decorativas nunca entram na rotina de queda: guardar a altura final mesmo quando estão presas à parede. */if(['Néon','Luzes de fada','Fita LED','Barra RGB','Candeeiro de parede'].includes(u.name)){u.y=g.position.y;u.fall=false;place(g);g.position.y=u.y;if(g===cur)hS.set(u.y);return}if(u.wall!=null)return;const up=new THREE.Vector3(0,1,0),origin=new THREE.Vector3(g.position.x,10,g.position.z),down=new THREE.Vector3(0,-1,0),caster=new THREE.Raycaster(origin,down,0,20);const candidates=items.filter(o=>o!==g&&o.userData.wall==null);let hits=caster.intersectObjects(candidates,true),top=null;for(const hit of hits){if(!hit.face||hit.object.userData.hit)continue;const normal=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);if(normal.dot(up)>.65&&hit.point.y>.025&&(!top||hit.point.y>top.point.y))top=hit;}const box=bbox(g);const bottomOffset=box.min.y-g.position.y;u.y=top?top.point.y-bottomOffset+.012:Math.max(.012,-bottomOffset+.012);const y0=g.position.y;place(g);if(Math.abs(y0-u.y)>.01){g.position.y=y0;u.fall=true}if(g===cur)hS.set(u.y)}
-function finishPointer(e){if(drag){const moved=drag;drag=null;if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4&&moved.userData.pet)petIt(moved);try{if(e.pointerId!=null&&el.hasPointerCapture(e.pointerId))el.releasePointerCapture(e.pointerId)}catch(_){}snapToSurface(moved);ctl.enabled=true;dn=null;}else if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4){ndc(e);const hh=bestHit();let gg=hh&&hh.object;while(gg&&!gg.userData.item)gg=gg.parent;if(gg&&gg.userData.pet)petIt(gg);else pick(null)}dn=null;}
+function finishPointer(e){if(drag){const moved=drag;drag=null;if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4&&moved.userData.pet)petIt(moved);try{if(e.pointerId!=null&&el.hasPointerCapture(e.pointerId))el.releasePointerCapture(e.pointerId)}catch(_){}const mvd=dn&&e.clientX!=null&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])>6;snapToSurface(moved);ctl.enabled=true;dn=null;if(mvd)pick(null);}else if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4){ndc(e);const hh=bestHit();let gg=hh&&hh.object;while(gg&&!gg.userData.item)gg=gg.parent;if(gg&&gg.userData.pet)petIt(gg);else pick(null)}dn=null;}
 document.addEventListener('selectstart',e=>{const n=e.target.nodeType===3?e.target.parentElement:e.target;if(!n||!/^(INPUT|TEXTAREA)$/.test(n.tagName))e.preventDefault()});el.addEventListener('dblclick',e=>e.preventDefault());el.addEventListener('contextmenu',e=>e.preventDefault());
 (function fallLoop(){requestAnimationFrame(fallLoop);items.forEach(g=>{const u=g.userData;if(['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'].includes(u.name)){u.fall=false;return}if(['Néon','Luzes de fada','Fita LED','Barra RGB','Candeeiro de parede'].includes(u.name)){u.fall=false;return}if(!u.fall)return;const d=u.y-g.position.y;if(Math.abs(d)<.004){g.position.y=u.y;u.fall=false}else g.position.y+=d*.3;if(g===cur)sel.setFromObject(g)})})();
 el.addEventListener('pointerup',finishPointer);
@@ -528,7 +653,7 @@ document.addEventListener('gestureend',e=>{if(cv.contains(e.target))e.preventDef
 addEventListener('keydown',e=>{if(e.target.tagName=='INPUT')return;if(e.key=='Delete'||e.key=='Backspace')del();if(e.key=='r')rot(Math.PI/12)});
 new ResizeObserver(()=>{const w=cv.clientWidth,h=cv.clientHeight;ren.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}).observe(cv);
 function qa(){ren.setPixelRatio(Math.min(devicePixelRatio,Q.pr));ren.setSize(cv.clientWidth,cv.clientHeight);ren.shadowMap.enabled=!!Q.sh;dl.castShadow=!!Q.sh;if(Q.sh){dl.shadow.mapSize.set(Q.sh,Q.sh);if(dl.shadow.map){dl.shadow.map.dispose();dl.shadow.map=null}}OLM.visible=!!Q.ol;mode();scene.traverse(o=>{if(o.material)o.material.needsUpdate=true})}
-const ob=ce('button',cv);ob.id='ob';ob.textContent='⚙️';ob.title='Opções';const op=ce('div',cv);op.id='opt';P=op;hd('Opções');const qr=[];
+const ob=ce('button',document.getElementById('headerActions'));ob.id='ob';ob.textContent='⚙️';ob.title='Opções';ob.setAttribute('aria-label','Opções do estúdio');const op=ce('div',cv);op.id='opt';P=op;hd('Opções');const qr=[];
 const pr=ce('div',op);pr.className='g';pr.style.gridTemplateColumns='repeat(3,1fr)';Object.keys(PQ).forEach(n=>bt(n,()=>{Object.assign(Q,PQ[n]);qa();qr.forEach(f=>f())},pr));
 const tg=(t,k)=>{const l=ce('label',op),i=ce('input',l),s=ce('span',l);i.type='checkbox';s.textContent=t;i.onchange=()=>{Q[k]=i.checked?PQ['Média'][k]:0;qa()};qr.push(()=>i.checked=!!Q[k])};tg('Sombras','sh');tg('Contornos','ol');tg('Reflexos','env');qr.forEach(f=>f());
 ce('p',op).textContent='Baixa deixa o telemóvel mais fluido. O detalhe dos modelos (polígonos) aplica-se aos objetos que adicionares a seguir.';ob.onclick=()=>{op.style.display=op.style.display=='block'?'none':'block'};
@@ -554,7 +679,53 @@ bt('📂 Meus designs',()=>{try{const all=JSON.parse(localStorage.getItem('room3
 bt('🔗 Partilhar',async()=>{try{const d=designData();d.name=prompt('Nome do design para partilhar:',d.name||'O meu quarto')||d.name;const encoded=btoa(unescape(encodeURIComponent(JSON.stringify(d))));const url=location.origin+location.pathname+'#design='+encoded;if(navigator.share){await navigator.share({title:d.name,text:'Vê o meu design de quarto 3D!',url})}else if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(url);alert('Link copiado! Envia-o a quem quiseres.')}else{prompt('Copia este link para partilhar o teu design:',url)}}catch(e){if(e.name!=='AbortError')alert('Não foi possível partilhar automaticamente. Tenta copiar o link.')}},savePanel);
 savePanel.querySelectorAll('button').forEach(b=>{b.style.padding='4px 5px';b.style.fontSize='11px';b.style.lineHeight='1.2';b.style.borderWidth='1px';b.style.borderBottomWidth='2px';b.style.borderRadius='7px';b.style.whiteSpace='normal'});
 (function loadSharedDesign(){const m=location.hash.match(/(?:^#|&)design=([^&]+)/);if(!m)return;try{const d=JSON.parse(decodeURIComponent(escape(atob(m[1]))));setTimeout(()=>restoreDesign(d),0)}catch(e){console.warn('Link de design inválido',e)}})();
-let fr=0;(function a(){requestAnimationFrame(a);ctl.update();if(items.some(i=>i.userData.proj)){if(++fr%3==0)pdraw(performance.now()/1e3);pupd()}ren.render(scene,cam)})();
+// ---- PRIMEIRA PESSOA: entrar no quarto e andar lá dentro
+const FP={on:false,anim:null,yaw:0,pitch:0,x:0,z:0,eye:1.6,vx:0,vz:0,mx:0,mz:0,bob:0,keys:{},boxes:[],last:0,saved:null,R:.24};
+const fpHit=(x,z)=>FP.boxes.some(b=>x>b[0]-FP.R&&x<b[1]+FP.R&&z>b[2]-FP.R&&z<b[3]+FP.R),
+fpLim=()=>[Math.max(.05,S.W/2-FP.R-.03),Math.max(.05,S.D/2-FP.R-.03)];
+function fpMove(dx,dz){const[hx,hz]=fpLim(),x=Math.max(-hx,Math.min(hx,FP.x+dx));if(!fpHit(x,FP.z))FP.x=x;const z=Math.max(-hz,Math.min(hz,FP.z+dz));if(!fpHit(FP.x,z))FP.z=z}
+function fpFree(x,z){const[hx,hz]=fpLim();for(let d=0;d<=3;d+=.1)for(let a=0,n=d?16:1;a<n;a++){const t=a/n*Math.PI*2,px=Math.max(-hx,Math.min(hx,x+Math.cos(t)*d)),pz=Math.max(-hz,Math.min(hz,z+Math.sin(t)*d));if(!fpHit(px,pz))return[px,pz]}return[Math.max(-hx,Math.min(hx,x)),Math.max(-hz,Math.min(hz,z))]}
+const fpUI=document.createElement('div');
+fpUI.innerHTML='<button id="fpBtn" type="button">🚶 Entrar no quarto</button><button id="fpExit" type="button">✕ Sair</button><button id="fpNight" type="button" title="Dia / noite">🌙</button><div id="fpJoy"><div id="fpKnob"></div></div><div id="fpHint"></div>';
+[...fpUI.children].forEach(c=>cv.append(c));
+const fpJoy=document.getElementById('fpJoy'),fpKnob=document.getElementById('fpKnob'),fpHintEl=document.getElementById('fpHint');
+function fpHint(t){fpHintEl.textContent=t;fpHintEl.style.opacity=1;clearTimeout(fpHint.t);fpHint.t=setTimeout(()=>fpHintEl.style.opacity=0,5000)}
+function fpEnter(){if(FP.on)return;pick(null);ctl.enabled=false;
+ FP.saved={p:cam.position.clone(),t:ctl.target.clone(),fov:cam.fov,near:cam.near};
+ const CEIL=['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'];
+ FP.boxes=[];items.forEach(g=>{const u=g.userData;if(u.wall!=null||(u.pet&&u.pet.root)||CEIL.includes(u.name))return;const b=bbox(g);if(isFinite(b.min.x)&&b.max.y>.32&&b.min.y<1.45)FP.boxes.push([b.min.x,b.max.x,b.min.z,b.max.z])});
+ const door=items.find(g=>/^Porta/.test(g.userData.name)&&g.userData.wall!=null);let sx=0,sz=0;
+ if(door){const n=[[0,1],[0,-1],[1,0],[-1,0]][door.userData.wall];sx=door.position.x+n[0]*.8;sz=door.position.z+n[1]*.8}
+ const p=fpFree(sx,sz);FP.x=p[0];FP.z=p[1];FP.yaw=Math.atan2(FP.x,FP.z);FP.pitch=-.04;FP.eye=Math.min(1.6,S.H-.45);FP.vx=FP.vz=FP.mx=FP.mz=0;FP.bob=0;FP.keys={};FP.last=performance.now();
+ FP.on=true;document.body.classList.add('fp');cam.near=.06;
+ FP.anim={t:0,dur:.9,p0:cam.position.clone(),q0:cam.quaternion.clone(),f0:cam.fov,p1:new THREE.Vector3(FP.x,FP.eye,FP.z),q1:new THREE.Quaternion().setFromEuler(new THREE.Euler(FP.pitch,FP.yaw,0,'YXZ')),f1:72,done:()=>fpHint(matchMedia('(pointer:coarse)').matches?'Joystick para andar · arrasta o ecrã para olhar':'W A S D ou setas para andar · arrasta para olhar · Esc para sair')}}
+function fpExit(){if(!FP.on||(FP.anim&&FP.anim.out))return;document.body.classList.remove('fp');FP.mx=FP.mz=0;FP.vx=FP.vz=0;FP.keys={};
+ const s=FP.saved,tmp=new THREE.PerspectiveCamera();tmp.position.copy(s.p);tmp.lookAt(s.t);
+ FP.anim={t:0,dur:.8,out:1,p0:cam.position.clone(),q0:cam.quaternion.clone(),f0:cam.fov,p1:s.p.clone(),q1:tmp.quaternion.clone(),f1:s.fov,done:()=>{FP.on=false;FP.anim=null;cam.rotation.order='XYZ';cam.near=s.near;cam.fov=s.fov;cam.updateProjectionMatrix();ctl.target.copy(s.t);ctl.enabled=true;ctl.update()}}}
+function fpStep(){const n=performance.now(),dt=Math.min(.05,(n-(FP.last||n))/1000);FP.last=n;const A=FP.anim;
+ if(A){A.t+=dt;const k=Math.min(1,A.t/A.dur),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;cam.position.lerpVectors(A.p0,A.p1,e);cam.quaternion.copy(A.q0).slerp(A.q1,e);cam.fov=A.f0+(A.f1-A.f0)*e;cam.updateProjectionMatrix();if(k>=1){FP.anim=null;A.done&&A.done()}return}
+ const K=FP.keys;let ix=FP.mx+(K.d||K.ArrowRight?1:0)-(K.a||K.ArrowLeft?1:0),iz=FP.mz+(K.w||K.ArrowUp?1:0)-(K.s||K.ArrowDown?1:0);const l=Math.hypot(ix,iz);if(l>1){ix/=l;iz/=l}
+ const sp=K.Shift?2.8:1.6,sy=Math.sin(FP.yaw),cy=Math.cos(FP.yaw),tx=(-sy*iz+cy*ix)*sp,tz=(-cy*iz-sy*ix)*sp;
+ FP.vx+=(tx-FP.vx)*Math.min(1,dt*9);FP.vz+=(tz-FP.vz)*Math.min(1,dt*9);
+ if(fpHit(FP.x,FP.z)){const p=fpFree(FP.x,FP.z);FP.x=p[0];FP.z=p[1]}
+ fpMove(FP.vx*dt,FP.vz*dt);const v=Math.hypot(FP.vx,FP.vz);FP.bob+=v*dt*5.5;
+ cam.position.set(FP.x,FP.eye+Math.sin(FP.bob)*.014*Math.min(1,v/1.4),FP.z);cam.rotation.set(FP.pitch,FP.yaw,0,'YXZ')}
+// controlos: joystick (andar), arrastar (olhar), teclado
+document.getElementById('fpBtn').onclick=fpEnter;document.getElementById('fpExit').onclick=fpExit;
+document.getElementById('fpNight').onclick=()=>{night=!night;mode()};
+let fpJ=null,fpL=null;
+const fpJset=e=>{const r=fpJoy.getBoundingClientRect(),R=r.width/2-8;let dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);const l=Math.hypot(dx,dy);if(l>R){dx*=R/l;dy*=R/l}fpKnob.style.transform='translate('+dx+'px,'+dy+'px)';const m=Math.hypot(dx,dy)/R;FP.mx=m<.12?0:dx/R;FP.mz=m<.12?0:-dy/R};
+fpJoy.addEventListener('pointerdown',e=>{fpJ=e.pointerId;try{fpJoy.setPointerCapture(e.pointerId)}catch(_){}fpJset(e);e.preventDefault()});
+fpJoy.addEventListener('pointermove',e=>{if(e.pointerId===fpJ)fpJset(e)});
+const fpJend=e=>{if(e.pointerId!==fpJ)return;fpJ=null;FP.mx=FP.mz=0;fpKnob.style.transform=''};
+fpJoy.addEventListener('pointerup',fpJend);fpJoy.addEventListener('pointercancel',fpJend);
+el.addEventListener('pointerdown',e=>{if(!FP.on||FP.anim)return;fpL={id:e.pointerId,x:e.clientX,y:e.clientY};try{el.setPointerCapture(e.pointerId)}catch(_){}});
+el.addEventListener('pointermove',e=>{if(!FP.on||!fpL||e.pointerId!==fpL.id||FP.anim)return;FP.yaw-=(e.clientX-fpL.x)*.0042;FP.pitch=Math.max(-1.3,Math.min(1.3,FP.pitch-(e.clientY-fpL.y)*.0042));fpL.x=e.clientX;fpL.y=e.clientY});
+const fpLend=e=>{if(fpL&&e.pointerId===fpL.id)fpL=null};el.addEventListener('pointerup',fpLend);el.addEventListener('pointercancel',fpLend);
+addEventListener('keydown',e=>{if(!FP.on)return;if(e.key==='Escape'){fpExit();return}FP.keys[e.key.length===1?e.key.toLowerCase():e.key]=true;if(e.key.startsWith('Arrow')||e.key===' ')e.preventDefault()});
+addEventListener('keyup',e=>{delete FP.keys[e.key.length===1?e.key.toLowerCase():e.key]});
+addEventListener('blur',()=>{FP.keys={}});
+let fr=0;(function a(){requestAnimationFrame(a);if(FP.on)fpStep();else ctl.update();if(items.some(i=>i.userData.proj)){if(++fr%3==0)pdraw(performance.now()/1e3);pupd()}ren.render(scene,cam)})();
 // Cor do fundo + música (várias faixas, cada uma com o seu ambiente)
 const ambientUI=ce('div',op);ambientUI.id='ambienteControls';
 const ah=ce('h3',ambientUI);ah.textContent='Fundo & música';ah.style.fontSize='15px';
@@ -711,9 +882,348 @@ const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBt
 <button id="pwaInstallBtn" type="button">⬇ Instalar app</button>
 <div id="pwaHelp" role="dialog" aria-modal="true"><div class="card"><h2>Instalar Designer de Quartos 3D</h2><p id="pwaHelpText">No iPhone: abre este site no Safari, toca em Partilhar e escolhe «Adicionar ao ecrã principal».</p><button id="pwaClose" type="button">Fechar</button></div></div>
 <script>
+/* ===== V2-A: catálogo expandido (famílias paramétricas, mesmo estilo procedural + outline) ===== */
+(()=>{
+const PI=Math.PI,NEO=[['Ciano','#3df0ff'],['Magenta','#ff3df0'],['Âmbar','#ffb347'],['Verde','#4dff88'],['Azul','#4a8bff'],['Roxo','#a855f7'],['Rosa','#ff6fa3'],['Vermelho','#ff4d4d'],['Lima','#c8ff3d']],
+FAB=[['Cinza','#8c96a0'],['Areia','#d9c7a8'],['Verde-salva','#7d8f6b'],['Azul-petróleo','#3f6b7a'],['Terracota','#c9744a'],['Rosa-velho','#c99aa0'],['Mostarda','#d6a53a'],['Grafite','#3a3f47'],['Marfim','#efe8da']],
+PRI=window.PRI={},NEW=window.NEWP={};
+const fam=(page,gd,pal,rows,tn)=>rows.forEach(([n,k,y,pr,fn])=>pal.forEach(([pn,c])=>{const nm=n+' · '+pn;CAT[nm]=[k,y,g=>fn(g,c),tn?c:undefined];PRI[nm]=pr;(NEW[page]=NEW[page]||{gd,l:[]}).l.push(nm)}));
+const HT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),r=x.createRadialGradient(32,32,0,32,32,32);r.addColorStop(0,'rgba(255,255,255,.9)');r.addColorStop(.35,'rgba(255,255,255,.25)');r.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=r;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const hl=(g,c,x,y,z,s)=>{const m=new THREE.Sprite(new THREE.SpriteMaterial({map:HT,color:c,blending:THREE.AdditiveBlending,depthWrite:false,transparent:true,opacity:.7}));m.position.set(x,y,z);m.scale.set(s,s,1);m.raycast=()=>{};m.userData.ol=1;g.add(m);(g.userData.hl=g.userData.hl||[]).push(m)};
+const hx=(g,c,x,y)=>{const m=a3(g,new THREE.CylinderGeometry(.16,.16,.03,6),c,x,y,.02);m.rotation.x=PI/2;glow(m,c)};
+const rx=(m,v)=>{m.rotation.x=v;return m};
+
+// 1) ILUMINAÇÃO INTELIGENTE RGB (+ variante "Ciclo RGB" que percorre o arco-íris)
+fam('Luz RGB','💡',[...NEO,['Ciclo RGB','#ff3df0']],[
+['Candeeiro smart de pé','f',0,140,(g,c)=>{cy(g,.14,.14,.03,'#222',0,.015,0);cy(g,.015,.015,1.45,'#333',0,.75,0);glow(cy(g,.1,.13,.45,c,0,1.6,0),c);lt(g,c,1.1,6,0,1.6,0);hl(g,c,0,1.6,0,.9)}],
+['Painel hexagonal','w',1.4,90,(g,c)=>{[[0,0],[.27,.15],[0,.3],[-.27,.15]].forEach(([x,y])=>hx(g,c,x,y));lt(g,c,.6,3.5,0,.15,.3);hl(g,c,0,.15,.05,1.1)}],
+['Painel triangular','w',1.4,80,(g,c)=>{for(let i=0;i<5;i++){const m=a3(g,new THREE.CylinderGeometry(.15,.15,.03,3),c,(i-2)*.13,0,.02);m.rotation.set(PI/2,i%2?PI:0,0);glow(m,c)}lt(g,c,.5,3,0,0,.3)}],
+['Barra de luz smart','f',0,70,(g,c)=>{bx(g,.16,.03,.16,'#222',0,.015,0);glow(bx(g,.05,1.3,.05,c,0,.68,0),c);lt(g,c,.9,4,0,.8,.2);hl(g,c,0,.7,0,1)}],
+['Cubo luminoso','f',0,60,(g,c)=>{glow(bx(g,.32,.32,.32,c,0,.16,0),c);lt(g,c,.8,4,0,.4,0)}],
+['Esfera luminosa','f',0,65,(g,c)=>{cy(g,.1,.1,.02,'#222',0,.01,0);glow(sp(g,.22,c,0,.25,0),c);lt(g,c,.9,5,0,.3,0);hl(g,c,0,.25,0,.9)}],
+['Anel LED','w',1.5,75,(g,c)=>{glow(a3(g,new THREE.TorusGeometry(.32,.018,8,40),c,0,.4,.04),c);lt(g,c,.7,4,0,.4,.3);hl(g,c,0,.4,.05,1)}],
+['Lava lamp','f',0,45,(g,c)=>{cy(g,.07,.1,.06,'#333',0,.03,0);cy(g,.05,.08,.28,c,0,.2,0,{transparent:true,opacity:.7,emissive:c,emissiveIntensity:.8});sp(g,.04,c,0,.2,0);cy(g,.04,.04,.04,'#333',0,.37,0);lt(g,c,.5,2.5,0,.25,0)}],
+['Candeeiro de cabeceira smart','f',0,55,(g,c)=>{cy(g,.07,.07,.02,'#333',0,.01,0);cy(g,.012,.012,.2,'#333',0,.12,0);glow(cy(g,.07,.11,.14,c,0,.3,0),c);lt(g,c,.6,3,0,.3,0)}],
+['Foco de chão RGB','f',0,85,(g,c)=>{cy(g,.1,.12,.04,'#222',0,.02,0);cy(g,.07,.09,.16,'#333',0,.12,0);glow(cy(g,.065,.065,.01,c,0,.2,0),c);const s=new THREE.SpotLight(c,1.6,6,.5,.6);s.position.set(0,.2,0);s.target.position.set(0,3,0);g.add(s,s.target);hl(g,c,0,.2,0,.6)}]
+],1);
+
+// 2) ELETRÓNICA VINTAGE
+fam('Vintage','📻',FAB,[
+['TV CRT','f',0,260,(g,c)=>{bx(g,.7,.55,.55,c,0,.275,0);bx(g,.46,.4,.02,'#1e3a5f',-.07,.29,.28,{emissive:'#1e3a5f',emissiveIntensity:.7});[.27,.35].forEach(y=>rx(cy(g,.025,.025,.03,'#222',.26,y,.285),PI/2));[-.1,.1].forEach(x=>{bx(g,.015,.3,.015,'#444',x,.7,0).rotation.z=x>0?-.5:.5})}],
+['Rádio de válvulas','f',0,120,(g,c)=>{bx(g,.4,.26,.18,c,0,.13,0);bx(g,.16,.18,.01,'#2a2a2a',-.09,.13,.096);glow(bx(g,.12,.06,.01,'#ffd9a0',.1,.19,.096),'#ffd9a0');[-.1,0,.1].forEach(x=>glow(cy(g,.02,.02,.06,'#ffb347',x,.29,0),'#ffb347'))}],
+['Gira-discos','f',0,150,(g,c)=>{bx(g,.45,.06,.35,c,0,.03,0);cy(g,.14,.14,.01,'#111',-.05,.065,0);cy(g,.012,.012,.02,'#d4af37',-.05,.08,0);bx(g,.2,.01,.01,'#aaa',.1,.09,-.05).rotation.y=.5}],
+['Telefone rotativo','f',0,70,(g,c)=>{bx(g,.2,.07,.2,c,0,.035,0);bx(g,.24,.04,.05,c,0,.1,0);cy(g,.05,.05,.02,'#eee',0,.075,.05)}],
+['Máquina de escrever','f',0,110,(g,c)=>{bx(g,.36,.12,.3,c,0,.08,0);cy(g,.02,.02,.34,'#222',0,.2,-.1).rotation.z=PI/2;bx(g,.2,.2,.005,'#fff',0,.25,-.12);bx(g,.3,.01,.1,'#ddd',0,.145,.06)}],
+['Jukebox','f',0,900,(g,c)=>{bx(g,.7,1.3,.5,c,0,.65,0);rx(cy(g,.35,.35,.5,c,0,1.3,0),PI/2);glow(bx(g,.5,.05,.02,'#ff6fa3',0,1.05,.26),'#ff6fa3');glow(bx(g,.4,.3,.02,'#ffb54d',0,.7,.26),'#ffb54d');lt(g,'#ffb54d',.5,3,0,.9,.6)}],
+['Gramofone','f',0,180,(g,c)=>{bx(g,.3,.12,.3,c,0,.06,0);a3(g,new THREE.ConeGeometry(.2,.32,Q.c>20?20:12),'#d4af37',.12,.3,0).rotation.z=-1.1;cy(g,.01,.01,.15,'#aaa',0,.19,0)}],
+['Câmara retro','f',0,95,(g,c)=>{bx(g,.2,.12,.08,c,0,.06,0);rx(cy(g,.05,.05,.06,'#222',0,.07,.07),PI/2);bx(g,.06,.03,.03,'#d4af37',.06,.14,0)}]
+]);
+
+// 3) GAMING DE ÚLTIMA GERAÇÃO
+fam('Gaming+','🕹️',NEO,[
+['PC torre RGB','f',0,1100,(g,c)=>{bx(g,.22,.5,.5,'#1a1a1a',0,.25,0);glow(bx(g,.01,.4,.4,c,.115,.25,0),c);lt(g,c,.5,2,.3,.2,0)}],
+['Cadeira gamer','f',0,320,(g,c)=>{bx(g,.5,.1,.5,'#1a1a1a',0,.5,0);bx(g,.5,.8,.1,'#1a1a1a',0,.95,-.22);[-.2,.2].forEach(x=>bx(g,.1,.6,.12,c,x,.95,-.2));bx(g,.28,.15,.1,c,0,1.43,-.2);cy(g,.03,.03,.4,'#555',0,.25,0);cy(g,.3,.3,.03,'#333',0,.02,0)}],
+['Mesa gamer elevatória','f',0,480,(g,c)=>{bx(g,1.6,.04,.75,'#1a1a1a',0,.75,0);[-.7,.7].forEach(x=>bx(g,.06,.73,.6,'#222',x,.365,0));glow(bx(g,1.55,.012,.012,c,0,.73,.37),c);lt(g,c,.6,3,0,.6,.4)}],
+['Monitor curvo 34"','f',0,520,(g,c)=>{[-1,0,1].forEach(i=>{bx(g,.42,.34,.02,'#111',i*.4,.5,Math.abs(i)*.04).rotation.y=-i*.28;bx(g,.38,.3,.01,'#1e3a5f',i*.4,.5,.012+Math.abs(i)*.04,{emissive:'#1e3a5f',emissiveIntensity:.9}).rotation.y=-i*.28});bx(g,.05,.25,.04,'#333',0,.3,-.04);glow(bx(g,1.1,.01,.01,c,0,.32,-.03),c)}],
+['Teclado mecânico','f',0,110,(g,c)=>{bx(g,.45,.025,.15,'#1a1a1a',0,.0125,0);glow(bx(g,.43,.004,.12,c,0,.027,0),c)}],
+['Cockpit de simulação','f',0,1300,(g,c)=>{bx(g,.6,.08,1.4,'#222',0,.2,0);bx(g,.5,.5,.1,'#222',0,.5,-.4).rotation.x=-.2;bx(g,.5,.1,.5,c,0,.3,-.1);rx(cy(g,.15,.15,.02,'#111',0,.7,.45),1.2);glow(bx(g,.02,.02,1.3,c,.3,.22,0),c)}],
+['Pufe gamer','f',0,90,(g,c)=>{sp(g,.35,c,0,.3,0).scale.set(1,.8,1)}],
+['Comando pro','f',0,70,(g,c)=>{bx(g,.16,.04,.1,'#222',0,.02,0);sp(g,.025,c,-.04,.045,0);sp(g,.025,c,.04,.045,0)}]
+]);
+
+// 4) MOBILIÁRIO MODULAR CONTEMPORÂNEO
+fam('Modular','🧩',FAB,[
+['Módulo de sofá centro','f',0,450,(g,c)=>{bx(g,.9,.4,.9,c,0,.2,0);bx(g,.9,.45,.2,c,0,.62,-.35)}],
+['Módulo de sofá canto','f',0,520,(g,c)=>{bx(g,.9,.4,.9,c,0,.2,0);bx(g,.9,.45,.2,c,0,.62,-.35);bx(g,.2,.45,.7,c,-.35,.62,.1)}],
+['Módulo chaise','f',0,600,(g,c)=>{bx(g,.9,.4,1.7,c,0,.2,.4);bx(g,.9,.45,.2,c,0,.62,-.35)}],
+['Módulo otomano','f',0,260,(g,c)=>bx(g,.9,.4,.6,c,0,.2,0)],
+['Mesa lounge','f',0,380,(g,c)=>{bx(g,1.1,.05,.6,c,0,.4,0);L4(g,1,.5,.38,'#333',.05)}],
+['Mesa de jantar modular','f',0,520,(g,c)=>{bx(g,1.8,.05,.9,c,0,.75,0);L4(g,1.7,.8,.73,'#2a2a2a',.06)}],
+['Estante modular','f',0,300,(g,c)=>{[-.4,.4].forEach(x=>bx(g,.04,1.2,.35,c,x,.6,0));[.02,.4,.8,1.18].forEach(y=>bx(g,.84,.04,.35,c,0,y,0));bx(g,.8,1.16,.01,c,0,.6,-.17)}],
+['Módulo de gavetas','f',0,280,(g,c)=>{bx(g,.8,.8,.4,c,0,.4,0);[.15,.4,.65].forEach(y=>{bx(g,.7,.02,.01,'#333',0,y+.1,.2);bx(g,.12,.03,.03,'#bbb',0,y,.21)})}],
+['Cadeira shell','f',0,140,(g,c)=>{bx(g,.5,.06,.46,c,0,.45,0);bx(g,.5,.4,.06,c,0,.7,-.2).rotation.x=-.15;L4(g,.4,.36,.45,'#b08a50',.03)}],
+['Poltrona ovo','f',0,520,(g,c)=>{sp(g,.4,c,0,.65,-.05).scale.set(1,1.2,.8);cy(g,.25,.25,.03,'#444',0,.02,0);bx(g,.3,.1,.3,'#fff',0,.4,.1)}]
+]);
+
+// 5) DECORAÇÃO DE PAREDE + TAPETES
+fam('Parede+','🖼️',FAB,[
+['Relógio minimal','w',1.8,45,(g,c)=>{rx(cy(g,.2,.2,.03,c,0,.2,.02),PI/2);bx(g,.01,.13,.01,'#111',0,.26,.04);bx(g,.09,.01,.01,'#111',.04,.2,.04)}],
+['Relógio sol','w',1.8,60,(g,c)=>{rx(cy(g,.14,.14,.03,c,0,.3,.02),PI/2);N(12,(i,a)=>{bx(g,.04,.2,.015,'#d4af37',cs(a)*.26,.3+sn(a)*.26,.02).rotation.z=a-PI/2})}],
+['Espelho arco','w',1,90,(g,c)=>{bx(g,.6,.9,.03,c,0,.45,.015);bx(g,.54,.84,.01,'#b8d4e6',0,.45,.035,{metalness:.3,roughness:.1});rx(cy(g,.3,.3,.03,c,0,.9,.015),PI/2);rx(cy(g,.27,.27,.01,'#b8d4e6',0,.9,.035),PI/2)}],
+['Espelho hexagonal','w',1,80,(g,c)=>{a3(g,new THREE.CylinderGeometry(.4,.4,.03,6),c,0,.4,.02).rotation.x=PI/2;a3(g,new THREE.CylinderGeometry(.35,.35,.01,6),'#b8d4e6',0,.4,.04,{metalness:.3,roughness:.1}).rotation.x=PI/2}],
+['Prateleira flutuante curta','w',1.5,35,(g,c)=>bx(g,.6,.04,.2,c,0,0,.1)],
+['Prateleira flutuante longa','w',1.5,55,(g,c)=>bx(g,1.4,.04,.22,c,0,0,.11)],
+['Painel ripado','w',.8,110,(g,c)=>N(10,i=>bx(g,.07,1.6,.03,c,-.45+i*.1,.8,.015))],
+['Painel acústico','w',1,95,(g,c)=>{bx(g,.6,.6,.05,c,0,.3,.025);bx(g,.5,.5,.02,c,0,.3,.06)}],
+['Estore romano','w',.6,70,(g,c)=>N(6,i=>bx(g,1.1,.18,.04,c,0,1.2-i*.19,.03))],
+['Tapeçaria','w',1,80,(g,c)=>{bx(g,.7,.9,.02,c,0,.45,.01);N(5,i=>bx(g,.6,.03,.01,'#fff',0,.15+i*.15,.025))}],
+['Galeria de molduras','w',1.2,65,(g,c)=>[-.2,.2].forEach((x,i)=>{bx(g,.3,.4,.03,c,x,.2+i*.12,.015);bx(g,.24,.34,.01,'#f4ead8',x,.2+i*.12,.035)})],
+['Tapete liso','f',0,60,(g,c)=>bx(g,2,.02,1.4,c,0,.01,0)],
+['Tapete com borda','f',0,80,(g,c)=>{bx(g,2,.02,1.4,'#f2eee6',0,.01,0);bx(g,1.8,.022,1.2,c,0,.011,0)}],
+['Tapete de riscas','f',0,70,(g,c)=>N(7,i=>bx(g,2,.02,.2,i%2?c:'#f2eee6',0,.01,-.6+i*.2))],
+['Tapete redondo liso','f',0,65,(g,c)=>{cy(g,.9,.9,.02,c,0,.01,0);cy(g,.55,.55,.022,'#f2eee6',0,.011,0)}]
+]);
+
+// 6) PLANTAS EXÓTICAS (famílias: leque, folha larga, árvore, roseta, cacto, flor)
+const PF={
+fan:(g,c,n,h,t)=>{pt(g,.18,.3,'#444');N(n,(i,a)=>lf(g,c,cs(a)*.1,.3+h/2,sn(a)*.1,.07,h/2,.015,sn(a)*t,0,-cs(a)*t))},
+broad:(g,c,n,h)=>{pt(g,.2,.28,'#8c5a3a');N(n,(i,a)=>{const x=cs(a)*.14*(1+i%2*.6),z=sn(a)*.14*(1+i%2*.6),y=h*(.55+i%3*.2);st(g,'#5a8a4a',.012,y,x,.28+y/2,z);lf(g,c,x*1.5,.3+y,z*1.5,.17,.02,.13,sn(a)*.4,0,-cs(a)*.4)})},
+tree:(g,c,h,r)=>{pt(g,.22,.3,'#c9744a');st(g,dk,.04,h,0,.3+h/2,0);[[0,0,0,1],[.2,-.1,.05,.7],[-.2,-.15,-.05,.7]].forEach(([x,y,z,k])=>sp(g,r*k,c,x,.3+h+y,z))},
+rosette:(g,c,n,r,e)=>{pt(g,.14,.2,'#d9c7a8');N(n,(i,a)=>lf(g,c,cs(a)*r,.24+i%2*.03,sn(a)*r,r*.9,.02,.035,0,-a,.3));if(e)sp(g,.05,e,0,.27,0)},
+cactus:(g,c,h)=>{pt(g,.14,.15,'#c9744a');st(g,c,.09,h,0,.15+h/2,0);sp(g,.09,c,0,.15+h,0);st(g,c,.045,.25,.16,.3+h*.3,0).rotation.z=PI/2;st(g,c,.045,.25,.26,.42+h*.3,0)},
+flower:(g,c,n,e)=>{pt(g,.14,.2,'#e0d8ef');N(n,(i,a)=>{const x=cs(a)*.07,z=sn(a)*.07,h=.35+i%3*.08;lf(g,g2,x*2,.3,z*2,.08,.02,.04,0,-a,.4);st(g,'#4a8f3a',.008,h,x,.2+h/2,z);lf(g,c,x,.2+h,z,.06,.075,.025);sp(g,.015,e||'#f1c40f',x,.2+h,z+.02)})}};
+[['Estrelícia','fan','#3fa05a',9,.9,.35,95],['Zamioculca','fan','#2a6a3a',7,.6,.25,60],['Iúca','fan','#4a8f4a',12,.9,.5,70],['Areca','fan','#5cb85c',11,1.2,.45,80],['Cica','fan','#2f7f46',10,.6,.7,120],['Clívia','fan','#3a8f4a',8,.6,.3,45],
+['Alocásia','broad','#2f7f46',6,.8,0,75],['Filodendro','broad','#3a8f5a',7,.7,0,45],['Costela-de-adão variegada','broad','#7fc97f',6,.9,0,110],['Jiboia','broad','#4cae4c',6,.4,0,25],['Calateia','broad','#3f9a6a',6,.5,0,40],['Lírio-da-paz','broad','#3a8f4a',5,.5,0,35],
+['Figueira-lira','tree','#3a8f4a',1,.35,0,130],['Seringueira','tree','#2a5a35',1.1,.3,0,110],['Pachira','tree','#4cae4c',.8,.3,0,85],
+['Bromélia','rosette','#3fa05a',10,.14,'#d63a4a',50],['Agave','rosette','#6fa7a0',12,.17,0,55],['Echeveria','rosette','#a8c8b8',14,.07,0,15],['Dioneia','rosette','#6bbf3a',8,.1,'#d63a4a',30],
+['Cacto-barril','cactus','#3f8f5a',.35,0,0,35],['Cacto-candelabro','cactus','#4a9f6a',.9,0,0,60],
+['Antúrio','flower','#d63a4a',5,'#f5f5f5',0,40],['Begónia','flower','#ff8aa8',6,0,0,28],['Orquídea phalaenopsis','flower','#fff',5,'#ff6fa3',0,45],['Estrelícia-anã','flower','#ff9a3c',4,'#3fa05a',0,35]].forEach(([n,k,c,a,b,d,p])=>{CAT[n]=['f',0,g=>PF[k](g,c,a,b,d)];PRI[n]=p;(NEW['Exóticas']=NEW['Exóticas']||{gd:'🌺',l:[]}).l.push(n)});
+
+// 7) CASA INTELIGENTE + ANIMAIS (novas raças e acessórios)
+const SM=(n,k,y,p,fn)=>{CAT[n]=[k,y,fn];PRI[n]=p;(NEW['Smart & Pets']=NEW['Smart & Pets']||{gd:'🏡',l:[]}).l.push(n)};
+SM('Humidificador','f',0,60,g=>{cy(g,.1,.12,.25,'#eee',0,.125,0);glow(cy(g,.06,.06,.01,'#9fd8ff',0,.26,0),'#9fd8ff')});
+SM('Regador automático','f',0,90,g=>{cy(g,.09,.11,.3,'#4a8bff',0,.15,0);cy(g,.02,.02,.5,'#2f3d4f',.1,.15,0).rotation.z=PI/2;glow(sp(g,.02,'#4dff88',0,.31,.08),'#4dff88')});
+SM('Lâmpada de cultivo','f',0,85,g=>{cy(g,.12,.12,.03,'#333',0,.015,0);cy(g,.015,.015,1.2,'#333',0,.6,0);glow(cy(g,.16,.2,.1,'#ff6fe0',0,1.25,0),'#ff6fe0');lt(g,'#ff6fe0',.9,4,0,1.2,0)});
+SM('Purificador de ar','f',0,180,g=>{bx(g,.25,.7,.25,'#f2f2f2',0,.35,0);glow(bx(g,.2,.02,.02,'#4dff88',0,.66,.13),'#4dff88')});
+SM('Aspirador robô','f',0,250,g=>{cy(g,.17,.17,.07,'#222',0,.035,0);glow(cy(g,.03,.03,.01,'#3df0ff',0,.075,.08),'#3df0ff')});
+SM('Assistente de voz','f',0,60,g=>{cy(g,.06,.05,.1,'#333',0,.05,0);glow(cy(g,.05,.05,.01,'#3df0ff',0,.105,0),'#3df0ff')});
+SM('Ar condicionado','w',2.1,420,g=>{bx(g,1,.28,.2,'#f5f5f5',0,0,.1);bx(g,.9,.02,.01,'#999',0,-.08,.2)});
+SM('Termóstato','w',1.4,70,g=>{cy(g,.07,.07,.03,'#eee',0,0,.015).rotation.x=PI/2;glow(cy(g,.045,.045,.01,'#4aa8ff',0,0,.035),'#4aa8ff')});
+Object.assign(BR,{
+'Cão Golden Retriever':{...DOGB,s:1.05,c:'#e0a850',c2:'#f0c880',earc:'#c88a38',tail:'fluff',pitch:.85},
+'Cão Bulldog Francês':{...DOGB,s:.6,len:.85,lh:.6,c:'#b88a6a',hc:'#3f3128',sc:'#3f3128',ear:'point',earc:'#3f3128',sn:.3,tail:'short',pitch:1.4},
+'Cão Border Collie':{...DOGB,s:.9,c:'#fafafa',saddle:'#1c1c1c',hc:'#1c1c1c',sc:'#fafafa',earc:'#1c1c1c',tail:'fluff'},
+'Cão Corgi':{...DOGB,s:.62,len:1.15,lh:.5,c:'#e0a050',c2:'#fff',ear:'point',earc:'#e0a050',tail:'short',pitch:1.3},
+'Cão Rottweiler':{...DOGB,s:1.1,c:'#1f1a17',c2:'#b5651d',earc:'#1f1a17',sn:.9,tail:'short',pitch:.7},
+'Cão Chihuahua':{...DOGB,s:.38,c:'#d9b080',ear:'point',earc:'#d9b080',hs:1.3,pitch:1.9,speed:.4},
+'Gato Maine Coon':{...CATB,s:.72,c:'#7a5a3a',stripe:'#3f2d1c',tail:'fluff',eye:'#e8a030'},
+'Gato Bengala':{...CATB,c:'#d9a05a',spots:['#6b3f1d'],nsp:9,eye:'#6bbf3a'},
+'Gato Ragdoll':{...CATB,c:'#f0ebe3',hc:'#6b5a4a',earc:'#6b5a4a',tc:'#6b5a4a',eye:'#4aa8ff',tail:'fluff'},
+'Coelho anão holandês':{...BR['Coelho'],s:.32,c:'#fafafa',c2:'#4a3a31'}});
+['Cão Golden Retriever','Cão Bulldog Francês','Cão Border Collie','Cão Corgi','Cão Rottweiler','Cão Chihuahua','Gato Maine Coon','Gato Bengala','Gato Ragdoll','Coelho anão holandês'].forEach(k=>{CAT[k]=['f',0,g=>{g.userData.pet=mkPet(g,BR[k])}];PRI[k]=/Cão R|Cão G|Maine|Bengala|Ragdoll/.test(k)?420:260;NEW['Smart & Pets'].l.push(k)});
+SM('Comedouro automático','f',0,70,g=>{cy(g,.1,.12,.3,'#eee',0,.15,0);cy(g,.14,.12,.05,'#d9534f',0,.025,.14)});
+SM('Fonte de água','f',0,45,g=>{cy(g,.13,.14,.06,'#9fd8ff',0,.03,0);cy(g,.05,.05,.2,'#eee',0,.14,0)});
+SM('Torre de gatos','f',0,140,g=>{bx(g,.5,.04,.5,'#c9a880',0,.02,0);[[0,.5],[.1,.9]].forEach(([x,y])=>cy(g,.05,.05,y,'#d9b88a',x,y/2,0));[[.4,.9],[.7,.5]].forEach(([y,w])=>bx(g,.35,.04,.35,'#c9a880',.05,y+.45,0))});
+
+// preços por regra para os 230+ objetos originais
+const PR=[[/^Cão (Pastor|Husky|Labrador|Dálmata)/,380],[/^Cão/,300],[/^Gato/,220],[/Papagaio/,500],[/Coelho/,70],[/Hamster|Porquinho/,30],[/Tartaruga/,60],[/Aquário/,160],[/Gaiola/,90],[/Cama de (cão|gato)|Cesto de gato|Casota|Arranhador/,60],[/Taças/,12],[/Cama king/,900],[/^Cama|Beliche|Berço/,480],[/Sofá de canto|Chaise/,1100],[/Sofá/,700],[/Frigorífico|Máquina|Fogão/,650],[/Banheira|Cabine/,800],[/Arcade/,1500],[/Computador|Secretária gamer/,1400],[/Projetor/,400],[/TV|Monitor|Portátil/,380],[/Roupeiro|Vitrine/,520],[/Estante|Cómoda|Aparador|Bancada|Ilha/,260],[/Mesa|Secretária|Poltrona/,200],[/Cadeira|Banco|Puf/,90],[/Janela|Porta/,300],[/Tapete/,70],[/Quadro|Galeria|Espelho|Tríptico/,60],[/Candeeiro|Lustre|Foco|Néon|LED|Luz|Globo|Barra/,55],[/Palmeira|Oliveira|Limoeiro|Pinheiro|Bananeira|Monstera|Fícus|Dracena|Bonsai/,90],[/Cacto|Cato|Suculenta|Planta|Feto|Hera|Bambu|Aloé|Sans|Orq|Viol|Rosa|Tulip|Hort|Jarra|Erva|Terr|Lavanda|Girassol/,28]];
+window.price=n=>PRI[n]??(PRI[n]=(PR.find(([r])=>r.test(n))||[0,40])[1]);
+})();
+
+</script>
+<script>
+/* ===== V2-B: iluminação/AO, economia, satisfação, plantas e animais exigentes ===== */
+(()=>{
+const PI=Math.PI,V3=THREE.Vector3,C=(v,a,b)=>Math.max(a,Math.min(b,v)),nm=g=>g.userData.name,isW=g=>CAT[nm(g)][0]=='w';
+const css=document.createElement('style');css.textContent=`.card em.pr{display:none;font-style:normal;font-size:10px;opacity:.75}body.eco .card em.pr{display:block}
+#eco{position:absolute;left:10px;bottom:78px;z-index:6;display:none;padding:4px 10px;border-radius:999px;background:var(--pn);border:2px solid var(--ac);font-size:12px;cursor:pointer;box-shadow:0 3px 10px #0004}body.eco #eco{display:block}body.fp #eco,body.fp #toast{display:none!important}
+#toast{position:absolute;left:50%;top:60px;transform:translateX(-50%);z-index:12;max-width:86%;padding:7px 14px;border-radius:14px;background:var(--pn);border:2px solid var(--ac);font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;text-align:center}
+.bar{height:8px;border-radius:5px;background:var(--bd);overflow:hidden;margin:2px 0 7px}.bar i{display:block;height:100%;background:var(--ac)}.sc{font-size:30px;color:var(--ac);text-align:center;margin:4px 0}.mini{font-size:11px;opacity:.9;margin:2px 0}`;document.head.append(css);
+const tz=document.createElement('div');tz.id='toast';cv.append(tz);let tzT;const toast=t=>{tz.textContent=t;tz.style.opacity=1;clearTimeout(tzT);tzT=setTimeout(()=>tz.style.opacity=0,2800)};
+const eco=document.createElement('button');eco.type='button';eco.id='eco';eco.setAttribute('aria-label','Abrir o painel de pontuação e orçamento');eco.textContent='A avaliar o projeto…';document.getElementById('economyStatus').append(eco);
+const fv=new V3();function fx(g,t){g.getWorldPosition(fv);fv.y+=(g.userData.pet&&g.userData.pet.fxH)||.7;fv.project(cam);const e=document.createElement('span');e.className='pfx';e.textContent=t;e.style.left=((fv.x+1)/2*cv.clientWidth)+'px';e.style.top=((1-fv.y)/2*cv.clientHeight)+'px';cv.appendChild(e);setTimeout(()=>e.remove(),1400)}
+
+// ---------- estado do modo exigente (persistente, separado dos designs)
+const E={on:false,day:0,spd:1,diff:1,bud:{}};try{Object.assign(E,JSON.parse(localStorage.getItem('room3d_eco')||'{}'))}catch(_){}E.day=0;
+const sv=()=>{try{localStorage.setItem('room3d_eco',JSON.stringify({on:E.on,spd:E.spd,diff:E.diff,bud:E.bud}))}catch(_){}};
+
+// ---------- RENDER: reflexos, oclusão ambiente (decals + cantos), sombras otimizadas
+const envT=(sky,st)=>{const c=document.createElement('canvas');c.width=512;c.height=256;const x=c.getContext('2d'),gr=x.createLinearGradient(0,0,0,256);sky.forEach(([o,k])=>gr.addColorStop(o,k));x.fillStyle=gr;x.fillRect(0,0,512,256);st.forEach(([a,b,w,h,k])=>{x.fillStyle=k;x.fillRect(a,b,w,h)});return new THREE.CanvasTexture(c)};
+const pm=new THREE.PMREMGenerator(ren),ENVD=pm.fromEquirectangular(envT([[0,'#bfe0ff'],[.45,'#fff'],[.55,'#d8c8b0'],[1,'#8a7258']],[[40,50,70,50,'#fff'],[190,40,90,60,'#fffbe8'],[350,50,60,45,'#fff'],[440,30,50,30,'#ffe9b0'],[0,120,512,4,'#fff']])).texture,
+ENVN=pm.fromEquirectangular(envT([[0,'#0a1020'],[.5,'#1a2038'],[1,'#10141c']],[[60,100,40,8,'#3df0ff'],[220,90,60,6,'#ff3df0'],[380,110,50,7,'#ffb347']])).texture;
+const _mode=mode;mode=function(){_mode();scene.environment=!Q.env?null:night?ENVN:ENVD};
+const aoT=(()=>{const c=document.createElement('canvas');c.width=c.height=64;const x=c.getContext('2d'),r=x.createRadialGradient(32,32,6,32,32,32);r.addColorStop(0,'#fff');r.addColorStop(1,'#000');x.fillStyle=r;x.fillRect(0,0,64,64);return new THREE.CanvasTexture(c)})();
+const cc2=document.createElement('canvas');cc2.width=cc2.height=128;{const x=cc2.getContext('2d');x.fillStyle='#000';x.fillRect(0,0,128,128);x.globalCompositeOperation='lighter';[[0,0,0,20],[0,128,0,108],[0,0,20,0],[128,0,108,0]].forEach(([a,b,c,d])=>{const q=x.createLinearGradient(a,b,c,d);q.addColorStop(0,'#fff');q.addColorStop(1,'#000');x.fillStyle=q;x.fillRect(0,0,128,128)})}
+const fAO=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.5,alphaMap:new THREE.CanvasTexture(cc2),depthWrite:false}));fAO.rotation.x=-PI/2;fAO.position.y=.006;fAO.raycast=()=>{};scene.add(fAO);
+const _room=room;room=function(){_room();const r=Math.hypot(S.W,S.D)/2+.6,c=dl.shadow.camera;Object.assign(c,{left:-r,right:r,top:r,bottom:-r,near:1,far:24});c.updateProjectionMatrix();fAO.scale.set(S.W,S.D,1)};
+if(PQ.Alta.sh==2048&&!/Android|iPhone|iPad|Mobi/i.test(navigator.userAgent)){PQ.Alta.sh=3072;if(Q.sh==2048)Q.sh=3072}
+
+// ---------- plantas e animais: definições
+const PLR=/Cacto|Cato|Suculenta|Aloé|Planta|Palmeira|Monstera|Fícus|Feto|Bambu|Hera|Orquídea|Bonsai|Dracena|Sansev|Girassol|Lavanda|Rosas|Tulipas|Hortênsia|Estrelícia|Alocásia|Zamioc|Iúca|Cica|Areca|Filodendro|Figueira|Seringueira|Pachira|Bromélia|Agave|Echeveria|Antúrio|Begónia|Clívia|Lírio|Dioneia|Jiboia|Calateia|Costela|Jarra|Ervas|Terrário|Oliveira|Limoeiro|Pinheiro|Bananeira|Violeta/,
+need=n=>/Feto|Calateia|Jiboia|Sansev|Zamioc|Hera|Filodendro|Lírio|Terrário|Clívia/.test(n)?.3:/Cact|Cato|Suculenta|Aloé|Girassol|Lavanda|Oliveira|Limoeiro|Rosas|Tulip|Palmeira|Bananeira|Estrelícia|Agave|Bonsai|Ervas|Echeveria|Iúca|Cica/.test(n)?.85:.55,
+per=n=>/Cact|Cato|Suculenta|Aloé|Sansev|Zamioc|Agave|Echeveria|Iúca|Cica/.test(n)?14:/Feto|Calateia|Orquídea|Dioneia|Hortênsia|Violeta|Lírio|Jarra/.test(n)?3:6,
+WC=new THREE.Color('#8a7438'),WIN=/^Janela|^Porta-janela|^Porta de vidro/,NX=[[0,1],[0,-1],[1,0],[-1,0]],NOISE=/Coluna|Soundbar|Arcade|Jukebox|Aspirador/;
+function lum(g){let s=0,k=0;g.traverse(o=>{if(o.isPointLight)s+=o.intensity*Math.min(o.distance||6,7)/4;else if(o.isSpotLight)s+=o.intensity*Math.min(o.distance||6,7)/4*.9;else if(o.userData&&o.userData.glow&&++k<5)s+=.12});return s}
+function wwOf(w){const u=w.userData;return u.ww=u.ww||(()=>{const b=bbox(w),v=new V3();b.getSize(v);return Math.max(v.x,v.z)/2+.45})()}
+function sunAt(x,z){let s=0;items.forEach(w=>{const u=w.userData;if(u.wall==null||!WIN.test(u.name))return;const n=NX[u.wall],dx=x-w.position.x,dz=z-w.position.z,al=dx*n[0]+dz*n[1],la=Math.abs(u.wall<2?dx:dz),ww=wwOf(w);if(al>0&&al<2.8&&la<ww)s=Math.max(s,(1-al/3)*Math.min(1.25,ww/.9))});return s}
+
+// ---------- melhorar cada objeto novo (reflexos, AO de contacto, limite de luzes, ciclo RGB, plantas)
+function up(g){const u=g.userData,n=u.name;if(u.v2)return;u.v2=1;
+ g.traverse(o=>{const m=o.material;if(!o.isMesh||o.userData.ol||!m||!m.color)return;if(m.transparent&&m.opacity<.6&&!m.map){m.envMapIntensity=1.8;m.roughness=.05}else if(m.metalness>=.3)m.envMapIntensity=2});
+ if(CAT[n][0]=='f'&&u.y<.3&&!u.pet){const b=bbox(g);if(isFinite(b.min.x)&&b.max.y-b.min.y>.1){const s=new V3();b.getSize(s);const d=new THREE.Mesh(new THREE.PlaneGeometry(1,1),new THREE.MeshBasicMaterial({color:0,transparent:true,opacity:.38,alphaMap:aoT,depthWrite:false}));d.rotation.x=-PI/2;d.position.set((b.min.x+b.max.x)/2-g.position.x,.005,(b.min.z+b.max.z)/2-g.position.z);d.scale.set(s.x+.25,s.z+.25,1);d.raycast=()=>{};d.userData.ol=1;g.add(d)}}
+ g.traverse(o=>{if(o.isSpotLight){let c=0;scene.traverse(p=>{if(p.isSpotLight&&p.castShadow)c++});if(c<2&&Q.sh){o.castShadow=true;o.shadow.mapSize.set(512,512);o.shadow.bias=-.002;o.shadow.camera.near=.1;o.shadow.camera.far=8}}});
+ let nl=0;scene.traverse(o=>{if(o.isPointLight||o.isSpotLight)nl++});if(nl>18){const r=[];g.traverse(o=>{if(o.isPointLight||o.isSpotLight)r.push(o)});r.forEach(l=>l.parent&&l.parent.remove(l));if(r.length)toast('💡 Limite de luzes reais atingido: este objeto só brilha.')}
+ if(/Ciclo RGB/.test(n)){u.cyc=1;u.ph=Math.random()}
+ if(PLR.test(n)&&CAT[n][0]=='f'){const c=[];g.traverse(o=>{const m=o.material;if(o.isMesh&&!o.userData.ol&&m&&m.color&&m.color.g>m.color.r*1.05&&m.color.g>m.color.b*1.1){if(!m.userData.c0)m.userData.c0=m.color.clone();c.push(m)}});u.pl={h:1,w:1,l:0,c,shown:0}}}
+const _mk=mk;mk=function(a,b,c){const n=items.length;_mk(a,b,c);if(items.length>n)up(items[items.length-1])};
+const _tint=tint;tint=function(g,c){_tint(g,c);(g.userData.hl||[]).forEach(s=>s.material.color.set(c))};
+cc.i.addEventListener('input',()=>{if(cur)cur.userData.cyc=0});
+const cyF=()=>{requestAnimationFrame(cyF);if(++cyF.f%4)return;const t=performance.now()/12e3;items.forEach(g=>{const u=g.userData;if(u.cyc)tint(g,'#'+new THREE.Color().setHSL((t+u.ph)%1,1,.55).getHexString())})};cyF.f=0;cyF();
+
+// ---------- catálogo: etiquetas de preço + novas páginas
+pn.querySelectorAll('.card').forEach(b=>b.insertAdjacentHTML('beforeend','<em class="pr">€'+price(b.querySelector('span').textContent)+'</em>'));
+const lstP=pgs['Lista'];
+Object.entries(NEWP).forEach(([t,{gd,l}])=>{const d=pg(t,gd);P=d;hd(t);const gg=ce('div');gg.className='g';l.forEach(k=>{const b=bt('',()=>mk(k,CAT[k][0]=='w'?0:(Math.random()-.5),CAT[k][0]=='w'?0:(Math.random()-.5)),gg);b.className='card';b.innerHTML=`<i>${gd}</i><span>${k}</span><em class="pr">€${price(k)}</em>`});lstP.b.before(d.b);lstP.before(d)});
+pn.addEventListener('click',e=>{if(!E.on||(career&&career.activeMission&&RM[ri].name===career.activeMission.roomName))return;const b=e.target.closest('.card');if(!b)return;const n=b.querySelector('span').textContent;if(cost()+price(n)>budget()){e.stopPropagation();e.preventDefault();toast('💸 Sem orçamento para '+n+' (€'+price(n)+')')}},true);
+
+// ---------- economia e objetivos
+const ty=()=>{const n=RM[ri].name.split(' #')[0];return n==='O Meu Quarto'?'Quarto':n},BUD={Quarto:2200,Sala:3500,Cozinha:3000,'Casa de banho':1800,'Escritório':2200,Hall:900,'Quarto de criança':1800,Varanda:900,Lavandaria:1200,Garagem:1500},
+base=()=>E.bud[ty()]??BUD[ty()]??2000,budget=()=>Math.round(base()*[1.5,1,.7][E.diff]),cost=()=>items.reduce((s,g)=>s+price(nm(g)),0);
+const LZ='Candeeiro|Lustre|Foco|Barra|Painel|Anel|Lava|Esfera|Cubo lum|Globo|Lanterna|Velas|Néon|LED|Luzes',OB={Quarto:'Cama=^Cama|Beliche|Berço;Arrumação=Roupeiro|Cómoda|gavetas|Armário;Luz='+LZ+';Janela=Janela;Plantas=@',
+Sala:'Sofá=^Sofá|Módulo de sofá|Chaise;Mesa=Mesa de centro|Mesa de apoio|Mesa lounge;Ecrã=TV|Projetor|Monitor;Luz='+LZ+';Tapete=Tapete;Plantas=@',Cozinha:'Fogão=Fogão;Frigorífico=Frigorífico;Bancada=Bancada|Ilha;Exaustor=Exaustor;Mesa=Mesa',
+'Escritório':'Secretária=^Secretária|Mesa gamer;Cadeira=Cadeira;Arquivo=Arquivo|Estante;Luz='+LZ+';Plantas=@','Casa de banho':'Sanita=Sanita;Lavatório=Lavatório;Duche=Cabine|Banheira;Espelho=Espelho',Hall:'Aparador=Aparador;Espelho=Espelho;Capacho=Capacho',
+'Quarto de criança':'Cama=Cama de criança|Berço;Brinquedos=Caixa de brinquedos;Tapete=Tapete;Luz='+LZ,Varanda:'Mesa=Mesa de exterior;Cadeiras=Cadeira de exterior;Plantas=@;Sombra=Guarda-sol',Lavandaria:'Máquina=Máquina de lavar;Cesto=Cesto da roupa;Tábua=Tábua de engomar',Garagem:'Bancada=Bancada de trabalho;Prateleira=Prateleira metálica;Bicicleta=Bicicleta'},
+SEAT=/^(Cama|Beliche|Berço)|Sofá|Poltrona|Cadeira|Banco|Puf|Chaise|Espreguiç|Módulo de sofá|Módulo chaise|Módulo otomano|Pufe/,BED=/^(Cama(?! de (cão|gato))|Beliche|Berço)/;
+const hit=(a,b)=>Math.max(0,Math.min(a.max.x,b.max.x)-Math.max(a.min.x,b.min.x))*Math.max(0,Math.min(a.max.z,b.max.z)-Math.max(a.min.z,b.min.z));
+let LAST={cov:.2};
+function analyze(){const{W,D}=S,A=W*D,T=ty(),tips=[],nms=items.map(nm),fl=[];
+ items.forEach(g=>{const n=nm(g),u=g.userData;if(isW(g)||u.pet||u.y>.3||/Tapete|Capacho|Fita|Taças|Livros/.test(n))return;const b=bbox(g);if(isFinite(b.min.x)&&b.min.y<.35&&b.max.y>.25)fl.push({b,n})});
+ let sa=0,cx=0,cz=0,ov=0;fl.forEach(o=>{const a=(o.b.max.x-o.b.min.x)*(o.b.max.z-o.b.min.z);sa+=a;cx+=a*(o.b.min.x+o.b.max.x)/2;cz+=a*(o.b.min.z+o.b.max.z)/2});const cov=sa/A;LAST.cov=cov;
+ for(let i=0;i<fl.length;i++)for(let j=i+1;j<fl.length;j++)if(hit(fl[i].b,fl[j].b)>.06)ov++;
+ const doors=items.filter(g=>/^Porta/.test(nm(g))&&!/janela|vidro/.test(nm(g))&&g.userData.wall!=null);let blk=0;
+ doors.forEach(d=>{const n=NX[d.userData.wall],p=d.position,r=d.userData.wall<2?[.5,.6]:[.6,.5],c=[p.x+n[0]*.65,p.z+n[1]*.65],q={min:{x:c[0]-r[0],z:c[1]-r[1]},max:{x:c[0]+r[0],z:c[1]+r[1]}};if(fl.some(o=>hit(o.b,q)>.02))blk++});
+ let org=100-(cov<.06&&items.length?35:cov>.4?(cov-.4)*220:0)-ov*14-blk*22;if(cov>.4)tips.push(`📦 Sobrelotado: ${cov*100|0}% do chão ocupado`);if(ov)tips.push(`🧱 ${ov} móvel(is) sobreposto(s)`);if(blk)tips.push('🚪 Porta bloqueada por mobília');if(cov<.06&&items.length)tips.push('🏜️ Espaço demasiado vazio');
+ let art=0,nat=0;items.forEach(g=>{if(WIN.test(nm(g))&&g.userData.wall!=null){const v=new V3();bbox(g).getSize(v);nat+=Math.max(v.x,v.z)*v.y*1.6}else art+=lum(g)});if(night)nat=0;const luz=C(100*(art+nat)/(A*.28),0,100);if(luz<60)tips.push(night?'🌙 Pouca luz artificial para a noite':'💡 Pouca luz: janelas ou candeeiros');
+ const pets=items.filter(g=>g.userData.pet),pm=pets.length?pets.reduce((s,g)=>s+(g.userData.pet.mood??.6),0)/pets.length:.8,seats=nms.filter(n=>SEAT.test(n)).length,nd={Sala:3,Cozinha:2,Varanda:2}[T]||1;
+ const conf=40*C(seats/nd,0,1)+20*(nms.some(n=>/Tapete/.test(n))?1:0)+15*(nms.some(n=>/Cortinas|Estore/.test(n))?1:0)+25*pm;if(seats<nd)tips.push('🛋️ Falta onde sentar/deitar');
+ const fe=[];if(fl.length>1){const off=Math.hypot(cx/sa/(W/2),cz/sa/(D/2));fe.push(C(100-off*140,0,100));if(off>.5)tips.push('⚖️ Mobília desequilibrada: reparte o peso do espaço')}
+ items.filter(g=>BED.test(nm(g))).forEach(g=>{const r=g.rotation.y,k=.9*g.scale.x,hx=g.position.x-Math.sin(r)*k,hz=g.position.z-Math.cos(r)*k,ok=Math.min(W/2-Math.abs(hx),D/2-Math.abs(hz))<.35;fe.push(ok?100:25);if(!ok)tips.push('🛏️ Encosta a cabeceira da cama a uma parede');
+  const b=bbox(g);doors.forEach(d=>{const n=NX[d.userData.wall],p=d.position,q={min:{x:p.x+n[0]*1.6-(n[0]?1.4:.45),z:p.z+n[1]*1.6-(n[1]?1.4:.45)},max:{x:p.x+n[0]*1.6+(n[0]?1.4:.45),z:p.z+n[1]*1.6+(n[1]?1.4:.45)}},al=hit(b,q)>.15;fe.push(al?30:100);if(al)tips.push('🚪 Cama alinhada com a porta')})});
+ items.filter(g=>WIN.test(nm(g))&&g.userData.wall!=null).forEach(w=>{const n=NX[w.userData.wall],ww=wwOf(w),bl=fl.some(o=>{const cx2=(o.b.min.x+o.b.max.x)/2-w.position.x,cz2=(o.b.min.z+o.b.max.z)/2-w.position.z;return o.b.max.y>1.1&&cx2*n[0]+cz2*n[1]<.9&&Math.abs(w.userData.wall<2?cx2:cz2)<ww});fe.push(bl?30:100);if(bl)tips.push('🪟 Móvel alto a tapar a janela')});
+ const pl=items.filter(g=>g.userData.pl),pa=pl.length?pl.reduce((s,g)=>s+g.userData.pl.h,0)/pl.length:0;fe.push(pl.length?pa*100:45);if(!pl.length)tips.push('🌿 Sem plantas: traz vida ao espaço');
+ const feng=fe.reduce((a,b)=>a+b,0)/fe.length,wilt=pl.filter(g=>g.userData.pl.h<.5).length;if(wilt)tips.push(`🥀 ${wilt} planta(s) a murchar: luz solar junto à janela e 💧`);
+ pets.forEach(g=>{const p=g.userData.pet;if((p.mood??1)<.35)tips.push(`😟 ${nm(g)} infeliz: cama, comida, espaço e silêncio`)});
+ const ob=(OB[T]||'').split(';').filter(Boolean).map(s=>{const[a,b]=s.split('=');const re=new RegExp(b=='@'?PLR.source:b);return[a,nms.some(n=>re.test(n))]}),obs=ob.length?100*ob.filter(o=>o[1]).length/ob.length:100;ob.filter(o=>!o[1]).slice(0,2).forEach(o=>tips.push('🎯 Falta: '+o[0]));
+ const vida=(pl.length||pets.length)?((pl.length?pa:0)*pl.length+pm*pets.length)/(pl.length+pets.length)*100:70,sp=cost(),bd=budget(),bs=sp<=bd?100:C(100-(sp/bd-1)*250,0,100);if(sp>bd)tips.push(`💸 Acima do orçamento em €${sp-bd}`);
+ const R={conf:C(conf,0,100),luz,org:C(org,0,100),feng,obj:obs,vida,bud:bs};R.tot=Math.round(.15*R.conf+.2*R.luz+.2*R.org+.15*R.feng+.15*R.obj+.1*R.vida+.05*R.bud);R.tips=tips;R.ob=ob;R.sp=sp;R.bd=bd;return R}
+
+// ---------- simulação (tempo acelerado: 1 min real = 1 dia, ×velocidade)
+function sims(dt){const LM=new Map(items.map(o=>[o,lum(o)]));
+ items.forEach(g=>{const p=g.userData.pl;if(!p)return;const n=nm(g),x=g.position.x,z=g.position.z;let lamp=0,hum=0,aw=0;
+  items.forEach(o=>{if(o===g)return;const d=Math.hypot(o.position.x-x,o.position.z-z),on=nm(o);if(/cultivo/.test(on)&&d<1.8)lamp=Math.max(lamp,.9);else if(d<1.2&&LM.get(o)>.5)lamp=Math.max(lamp,.3);if(/Humidificador/.test(on)&&d<2.2)hum=1;if(/Regador automático/.test(on)&&d<1.6)aw=1});
+  p.l=C((night?0:sunAt(x,z))+lamp,0,1);p.w=C(p.w-dt/(per(n)*(hum?1.6:1))+(aw?dt*.8:0),0,1);
+  let dh=0;if(p.w<=0)dh-=.22;if(p.l<need(n))dh-=(need(n)-p.l)*.3;else if(p.w>0)dh+=.06;p.h=C(p.h+dh*dt,0,1);
+  const w=1-p.h;if(Math.abs(w-p.shown)>.01){p.shown=w;p.c.forEach(m=>m.color.copy(m.userData.c0).lerp(WC,Math.min(1,w*1.3)))}
+  if(p.h<.5&&!p.w1){p.w1=1;fx(g,'🥀');toast('🥀 '+n+' a murchar: '+(p.w<=0?'precisa de água (💧 Regar)':'precisa de mais luz solar'))}if(p.h>.7)p.w1=0})}
+function pets(){const{W,D}=S;items.forEach(g=>{const p=g.userData.pet;if(!p)return;const k=p.kind,x=g.position.x,z=g.position.z;let m=.45;
+ if(p.bedRe)m+=bedFor(g)?.18:-.1;if(/dog|cat|rabbit|hamster|gpig|turtle/.test(k))m+=items.some(o=>/Taças|Comedouro|Fonte de água/.test(nm(o)))?.1:-.1;
+ const fr=1-LAST.cov;m+=(fr>.6?.12:fr<.4?-.18:0)*(k=='dog'?1.5:1);
+ const nz=items.some(o=>NOISE.test(nm(o))&&Math.hypot(o.position.x-x,o.position.z-z)<2);if(nz)m-=/cat|rabbit|hamster/.test(k)?.3:.15;
+ if(k=='cat'&&!night&&sunAt(x,z)>.3)m+=.15;if(k=='dog'&&items.some(o=>/Sofá|Poltrona|Módulo de sofá/.test(nm(o))))m+=.08;
+ p.mood=C(p.mood==null?m:p.mood+(m-p.mood)*.3,0,1);
+ if(!p.root)return;p.sp0=p.sp0||p.speed;p.speed=p.sp0*(.55+.6*p.mood);
+ if((p.fxT=(p.fxT||rn(5,15))-1)<=0){p.fxT=rn(15,35);if(p.mood<.3)fx(g,'😿');else if(p.mood>.75)fx(g,'😊')}
+ if(p.mode==='idle'&&p.timer<1&&Math.random()<.4){let t=null;
+  if(k=='cat'&&!night){const w=items.filter(o=>o.userData.wall!=null&&WIN.test(nm(o)));if(w.length){const o=w[Math.random()*w.length|0],n=NX[o.userData.wall];t=[o.position.x+n[0]*.7+rn(-.3,.3)*(1-Math.abs(n[0])),o.position.z+n[1]*.7+rn(-.3,.3)*(1-Math.abs(n[1]))]}}
+  else if(k=='dog'&&Math.random()<.6){const s=items.filter(o=>/Sofá|Poltrona|Módulo de sofá/.test(nm(o)));if(s.length){const o=s[Math.random()*s.length|0];t=[o.position.x+rn(-.6,.6),o.position.z+.9]}}
+  else if(nz&&/rabbit|hamster|gpig/.test(k))t=[-x*.7,-z*.7];
+  if(t){p.tx=C(t[0],-(W/2-.4),W/2-.4);p.tz=C(t[1],-(D/2-.4),D/2-.4);p.mode='walk';p.timer=12;p.toBed=false}}})}
+
+// ---------- interface: separador "Projeto" + ficha de plantas/animais
+const pj=pg('Projeto','📊');lstP.b.before(pj.b);lstP.before(pj);P=pj;hd('Projeto de design');
+const tgl=bt('',()=>{E.on=!E.on;sv();ui()},pj);tgl.style.width='100%';
+const dif=ce('div',pj);dif.className='g';dif.style.cssText='grid-template-columns:repeat(3,1fr);margin:6px 0';['Fácil','Normal','Difícil'].forEach((n,i)=>bt(n,()=>{E.diff=i;sv();ui()},dif));
+const bs=rg('Orçamento €',500,15000,100,2000,v=>{E.bud[ty()]=v;sv();ui()});
+const sp2=ce('div',pj);sp2.className='g';sp2.style.cssText='grid-template-columns:repeat(4,1fr);margin:6px 0';[['⏸',0],['1×',1],['3×',3],['8×',8]].forEach(([n,v])=>bt(n,()=>{E.spd=v;sv();ui()},sp2));
+const out=ce('div',pj);P=pn;
+const info=document.createElement('div');info.style.cssText='margin:4px 0;font-size:10px';sd.appendChild(info);
+const wBtn=bt('💧 Regar',()=>{if(cur&&cur.userData.pl){cur.userData.pl.w=1;fx(cur,'💧');upInfo()}},sd);wBtn.style.cssText='display:none;width:100%;margin:3px 0';
+function upInfo(){const g=cur;if(!g)return;const u=g.userData;wBtn.style.display=u.pl?'block':'none';info.textContent=u.pl?`🌿 Saúde ${u.pl.h*100|0}% · 💧 ${u.pl.w*100|0}% · ☀️ ${u.pl.l*100|0}%${E.on?'':' (modo exigente desligado)'}`:u.pet&&u.pet.mood!=null?`Humor ${u.pet.mood>.66?'😊':u.pet.mood>.33?'😐':'😟'} ${u.pet.mood*100|0}%`:''}
+const _pick=pick;pick=function(g){_pick(g);if(g)upInfo()};
+let R0=null;function ui(){document.body.classList.toggle('eco',E.on);tgl.textContent='🎯 Modo exigente: '+(E.on?'LIGADO':'desligado');[...dif.children].forEach((b,i)=>b.classList.toggle('on',i==E.diff));[...sp2.children].forEach((b,i)=>b.classList.toggle('on',[0,1,3,8][i]==E.spd));if(document.activeElement!==bs)bs.set(base());
+ const R=R0=analyze();eco.textContent=`💰 €${R.bd-R.sp} livres · ⭐ ${R.tot} · Dia ${E.day|0}`;eco.style.borderColor=R.sp>R.bd?'#e74c3c':'';
+ const st=Math.round(R.tot/10)/2,rows=[['Conforto',R.conf],['Iluminação',R.luz],['Organização',R.org],['Feng-shui',R.feng],['Objetivos',R.obj],['Bem-estar (plantas/animais)',R.vida],['Orçamento',R.bud]];
+ out.innerHTML=`<div class="sc">${'★'.repeat(st|0)}${st%1?'½':''}${'☆'.repeat(5-Math.ceil(st))} ${R.tot}</div><div class="mini" style="text-align:center">${ty()} · €${R.sp} / €${R.bd} · Dia ${E.day|0}</div>`+rows.map(([n,v])=>`<div class="mini">${n} · ${v|0}</div><div class="bar"><i style="width:${v}%"></i></div>`).join('')+'<h3 style="font-size:14px">Objetivos</h3>'+(R.ob.map(([n,ok])=>`<div class="mini">${ok?'✅':'⬜'} ${n}</div>`).join('')||'—')+'<h3 style="font-size:14px">Dicas</h3>'+(R.tips.length?[...new Set(R.tips)].slice(0,7):['🎉 Tudo em ordem!']).map(t=>`<div class="mini">${t}</div>`).join('')}
+eco.onclick=()=>{if(pj.style.display=='none')pj.b.click()};
+let tk=0;setInterval(()=>{tk++;const dt=.5*E.spd/60;if(E.on){E.day+=dt;try{if(dt)sims(dt);if(tk%2==0)pets()}catch(e){console.warn(e)}}if(tk%2==0&&(E.on||pj.style.display!='none')){try{ui()}catch(e){console.warn(e)}}if(tk%2==0)upInfo()},500);
+
+// ---------- arranque
+items.forEach(up);room();mode();ui();qa();
+// ---------- modo carreira, loja e trabalhos de clientes
+const careerStorageKey='room3d_career_v1';
+let careerSaved=null;try{careerSaved=JSON.parse(localStorage.getItem(careerStorageKey)||'null')}catch(_){careerSaved=null}
+const career=Object.assign({money:750,xp:0,completed:0,totalEarned:0,offer:null,activeMission:null,history:[],recent:[]},careerSaved&&typeof careerSaved==='object'?careerSaved:{});
+career.money=Math.max(0,Number(career.money)||0);career.xp=Math.max(0,Number(career.xp)||0);career.completed=Math.max(0,Number(career.completed)||0);career.totalEarned=Math.max(0,Number(career.totalEarned)||0);career.history=Array.isArray(career.history)?career.history.slice(0,8):[];career.recent=Array.isArray(career.recent)?career.recent.slice(-16):[];
+if(!career.activeMission||typeof career.activeMission!=='object')career.activeMission=null;
+if(!career.offer||typeof career.offer!=='object')career.offer=null;
+const careerPick=a=>a[Math.floor(Math.random()*a.length)],careerInt=(a,b,step=1)=>Math.floor((a+Math.random()*(b-a+step))/step)*step;
+function careerLevelInfo(total){let level=1,left=Math.max(0,total),need=150;while(left>=need&&level<99){left-=need;level++;need=150+(level-1)*65}return{level,into:left,need}}
+const careerLevel=()=>careerLevelInfo(career.xp).level;
+function careerPrice(name){const p=Number(window.price?window.price(name):40);return Math.max(1,Math.round(Number.isFinite(p)?p:40))}
+function careerItemLevel(name){return Math.min(12,1+Math.floor(Math.max(0,careerPrice(name)-250)/450))}
+const firstNames=['Inês','Marta','Leonor','Beatriz','Sofia','Rita','Matilde','Carolina','Diana','Joana','Tomás','Miguel','Tiago','Rafael','Afonso','Diogo','André','Gonçalo','Lucas','Daniel','Eva','Lara','Nuno','Mafalda'];
+const surnames=['Silva','Costa','Pereira','Santos','Ribeiro','Moreira','Alves','Gomes','Rocha','Lopes','Ferreira','Mendes','Neves','Carvalho','Faria','Monteiro'];
+const styles=['escandinavo','industrial','retro colorido','natural','minimalista','pastel','neon','mediterrânico','urbano','aconchegante','artístico','contemporâneo'];
+const missionTypes=[
+ {key:'gamer',name:'Quarto gamer',level:1,low:1500,high:3300,xp:85,size:{W:4.8,D:4.3,H:2.6},emoji:'🎮',intro:'um quarto gamer funcional',needs:()=>[{label:'Monitores ou ecrãs',pattern:'Monitor|TV|Projetor',need:careerInt(2,3)},{label:'Luz de ambiente',pattern:'Néon|Fita LED|Barra RGB|Luzes de fada|Candeeiro',need:careerInt(1,2)},{label:'Cadeira confortável',pattern:'Cadeira gamer|Cadeira de escritório|Cadeira',need:1}]},
+ {key:'cat',name:'Espaço para gatos',level:1,low:1300,high:2900,xp:90,size:{W:4.8,D:4.4,H:2.6},emoji:'🐈',intro:'um espaço seguro e divertido para os gatos',needs:()=>[{label:'Arranhadores',pattern:'Arranhador de gato',need:careerInt(2,3)},{label:'Cama ou cesto de gato',pattern:'Cama de gato|Cesto de gato',need:1},{label:'Gato ou decoração felina',pattern:'Gato|Taças de comida|Casota de gato',need:1}]},
+ {key:'study',name:'Estúdio de estudo',level:1,low:1200,high:2700,xp:80,size:{W:4.2,D:3.8,H:2.6},emoji:'📚',intro:'um canto de estudo organizado',needs:()=>[{label:'Secretária',pattern:'Secretária|Mesa gamer|Secretária em L',need:1},{label:'Cadeira',pattern:'Cadeira',need:1},{label:'Ecrã ou portátil',pattern:'Monitor|Portátil|Computador',need:1},{label:'Luz de trabalho',pattern:'Candeeiro|Foco de teto',need:1}]},
+ {key:'plants',name:'Oásis de plantas',level:1,low:1100,high:2500,xp:80,size:{W:4.6,D:4.1,H:2.6},emoji:'🌿',intro:'um quarto cheio de plantas e luz natural',needs:()=>[{label:'Plantas',pattern:'Planta|Cato|Cacto|Suculenta|Palmeira|Monstera|Bonsai|Feto|Bambu|Orquídea|Violeta|Girassol|Lavanda|Rosas|Tulipas|Hortênsia|Terrário',need:careerInt(3,5)},{label:'Janela',pattern:'Janela|Porta-janela',need:1},{label:'Prateleira ou estante',pattern:'Prateleira|Estante',need:1}]},
+ {key:'cozy',name:'Quarto acolhedor',level:1,low:1400,high:2900,xp:80,size:{W:4.5,D:4,H:2.6},emoji:'🛏️',intro:'um quarto acolhedor para descansar',needs:()=>[{label:'Cama ou sofá',pattern:'Cama|Beliche|Sofá|Poltrona',need:1},{label:'Tapete',pattern:'Tapete',need:1},{label:'Luz suave',pattern:'Candeeiro|Luzes de fada|Lustre|Velas',need:1},{label:'Planta ou flores',pattern:'Planta|Cato|Cacto|Suculenta|Flores|Rosas|Tulipas|Girassol',need:1}]},
+ {key:'reading',name:'Recanto de leitura',level:1,low:1000,high:2400,xp:75,size:{W:4.2,D:3.8,H:2.6},emoji:'📖',intro:'um recanto calmo para ler',needs:()=>[{label:'Livros ou estante',pattern:'Livros|Estante|Prateleira',need:1},{label:'Poltrona ou sofá',pattern:'Poltrona|Sofá|Cadeira',need:1},{label:'Candeeiro',pattern:'Candeeiro|Foco de teto|Lustre',need:1}]},
+ {key:'child',name:'Quarto infantil',level:1,low:1400,high:3000,xp:95,size:{W:4.5,D:4.1,H:2.6},emoji:'🧸',intro:'um quarto infantil prático e alegre',needs:()=>[{label:'Berço ou cama de criança',pattern:'Berço|Cama de criança',need:1},{label:'Móvel de atividades',pattern:'Mesa de atividades|Cadeira de criança|Caixa de brinquedos',need:1},{label:'Tapete',pattern:'Tapete',need:1},{label:'Luz',pattern:'Candeeiro|Luzes|Lustre',need:1}]},
+ {key:'streamer',name:'Estúdio de streaming',level:2,low:2300,high:4600,xp:120,size:{W:5,D:4.4,H:2.7},emoji:'🎙️',intro:'um estúdio pronto para fazer transmissões',needs:()=>[{label:'Ecrãs',pattern:'Monitor|TV',need:careerInt(2,3)},{label:'Microfone',pattern:'Microfone',need:1},{label:'Cadeira gamer',pattern:'Cadeira gamer|Cadeira de escritório',need:1},{label:'Luz RGB',pattern:'Néon|Fita LED|Barra RGB|Luzes de fada',need:1}]},
+ {key:'music',name:'Quarto de música',level:2,low:1800,high:3800,xp:105,size:{W:4.8,D:4.2,H:2.6},emoji:'🎵',intro:'um quarto confortável para ouvir e criar música',needs:()=>[{label:'Colunas ou soundbar',pattern:'Coluna|Soundbar',need:careerInt(2,3)},{label:'Assento confortável',pattern:'Sofá|Poltrona|Cadeira',need:1},{label:'Luz de ambiente',pattern:'Candeeiro|Néon|Fita LED|Luzes de fada',need:1}]},
+ {key:'loft',name:'Mini apartamento',level:2,low:2200,high:4200,xp:115,size:{W:5,D:4.5,H:2.7},emoji:'🏙️',intro:'um espaço pequeno que serve para viver e trabalhar',needs:()=>[{label:'Cama',pattern:'Cama|Beliche',need:1},{label:'Secretária ou mesa',pattern:'Secretária|Mesa',need:1},{label:'Arrumação',pattern:'Roupeiro|Estante|Cómoda|Aparador',need:1},{label:'Luz',pattern:'Candeeiro|Luzes|Lustre',need:1}]},
+ {key:'luxury',name:'Suite de luxo',level:3,low:3200,high:6500,xp:150,size:{W:5.4,D:4.8,H:2.8},emoji:'✨',intro:'uma suite elegante com acabamentos premium',needs:()=>[{label:'Cama ou sofá premium',pattern:'Cama king|Cama com gavetas|Sofá de canto|Chaise longue|Cama',need:1},{label:'Espelho ou quadro',pattern:'Espelho|Quadro|Galeria',need:careerInt(1,2)},{label:'Iluminação decorativa',pattern:'Lustre|Candeeiro|Néon|Luzes de fada',need:1},{label:'Planta ou peça de luxo',pattern:'Planta|Palmeira|Monstera|Bonsai|Tapete persa|Vitrine',need:1}]}
+];
+function careerMakeOffer(){const possible=missionTypes.filter(t=>t.level<=careerLevel()),type=careerPick(possible),style=careerPick(styles),client=careerPick(firstNames)+' '+careerPick(surnames),needs=type.needs(),budget=careerInt(type.low,type.high,50),id=Date.now().toString(36)+Math.random().toString(36).slice(2,8),signature=[type.key,style,needs.map(n=>n.need).join('-'),budget,client].join('|');
+ const offer={id,type:type.key,title:type.name,client,emoji:type.emoji,style,budget,reward:Math.round(budget*(.46+Math.random()*.09)+260),xp:type.xp+careerInt(0,36),level:type.level,size:type.size,brief:`${client} quer ${type.intro}, em estilo ${style}. O pedido inclui ${needs.map(n=>n.need+' '+n.label.toLowerCase()).join(', ')}. Mantém o custo dentro do orçamento do cliente.`,requirements:needs,signature};
+ if(career.recent.includes(signature)){offer.signature+='|'+Date.now().toString(36)}career.recent.push(offer.signature);career.recent=career.recent.slice(-16);return offer}
+if(career.activeMission&&(!Array.isArray(career.activeMission.requirements)||!career.activeMission.title))career.activeMission=null;
+if(!career.activeMission&&(!career.offer||!Array.isArray(career.offer.requirements)))career.offer=careerMakeOffer();
+const careerPage=pg('Carreira','🏆');careerPage.classList.add('career-page');P=careerPage;hd('Modo carreira');
+const careerIntro=ce('p',careerPage);careerIntro.className='career-intro';careerIntro.textContent='Decora o teu quarto, aceita pedidos de clientes, ganha dinheiro e XP. Cada missão gera um cliente e um desafio diferente.';
+const careerStatsBox=ce('div',careerPage);careerStatsBox.className='career-stat-grid';
+function careerStat(parent){const d=ce('div',parent);d.className='career-stat';const b=ce('b',d),s=ce('span',d);return{box:d,value:b,label:s}}
+const careerLevelStat=careerStat(careerStatsBox),careerJobsStat=careerStat(careerStatsBox),careerEarnStat=careerStat(careerStatsBox);
+careerLevelStat.label.textContent='NÍVEL';careerJobsStat.label.textContent='TRABALHOS CONCLUÍDOS';careerEarnStat.label.textContent='TOTAL RECEBIDO';
+const homeRoomCard=ce('section',careerPage);homeRoomCard.className='career-block';const homeRoomTitle=ce('h4',homeRoomCard);homeRoomTitle.textContent='🏠 O Meu Quarto';const homeRoomInfo=ce('p',homeRoomCard);const homeRoomActions=ce('div',homeRoomCard);homeRoomActions.className='career-actions';
+const homeJump=bt('Ir para o meu quarto',()=>{const i=RM.findIndex(r=>r.name==='O Meu Quarto');if(i>=0)go(i)},homeRoomActions);homeJump.className='career-primary';const browseShop=bt('Abrir a loja',()=>{const p=pgs['Mobília'];if(p&&p.style.display==='none')p.b.click()},homeRoomActions);
+const homeMissionCard=ce('section',careerPage);homeMissionCard.className='career-block mission-card';const homeMissionContent=ce('div',homeMissionCard);
+const historyCard=ce('section',careerPage);historyCard.className='career-block';const historyTitle=ce('h4',historyCard);historyTitle.textContent='📜 Trabalhos recentes';const historyList=ce('div',historyCard);historyList.className='mission-list';
+const jobsPage=pg('Trabalhos / Clientes','🧾');jobsPage.classList.add('career-page');P=jobsPage;hd('Trabalhos / Clientes');const jobsIntro=ce('p',jobsPage);jobsIntro.className='career-intro';jobsIntro.textContent='Os pedidos mudam a cada cliente. Aceita um contrato, prepara a divisão, cumpre os objetivos e entrega o projeto para receber o pagamento e XP.';
+const missionContent=ce('div',jobsPage);const missionActions=ce('div',jobsPage);missionActions.className='career-actions';
+const careerHomeNav=document.getElementById('careerNavHome'),careerJobsNav=document.getElementById('careerNavJobs');
+function careerOpenPage(page){if(page&&page.style.display==='none')page.b.click()}
+careerHomeNav.onclick=()=>careerOpenPage(careerPage);careerJobsNav.onclick=()=>careerOpenPage(jobsPage);
+function careerRoom(name){const r=RM.find(x=>x.name===name);if(!r)return null;return{record:r,items:r===RM[ri]?items:(r.items||[])}}
+function careerPackRoom(r){if(!r)return null;const active=r===RM[ri],objects=active?items:(r.items||[]),roomSize=active?{...S}:{...r.S};return{version:1,name:r.name,S:roomSize,wc:active?'#'+wallM.material.color.getHexString():r.wc,fc:active?'#'+floor.material.color.getHexString():r.fc,items:objects.map(g=>{const u=g.userData;return{name:u.name,x:g.position.x,z:g.position.z,y:u.y,wall:u.wall??null,t:u.t??null,rotation:g.rotation.y,scale:g.scale.x,pitch:u.pitch,zoom:u.zoom,col:u.col,mat:u.mat,mk:u.mk}})}}
+function careerPersist(){try{const home=RM.find(r=>r.name==='O Meu Quarto'),active=career.activeMission&&career.activeMission.roomName?careerRoom(career.activeMission.roomName):null;const save={money:career.money,xp:career.xp,completed:career.completed,totalEarned:career.totalEarned,offer:career.offer,activeMission:career.activeMission,history:career.history,recent:career.recent,homeDesign:careerPackRoom(home),clientDesign:active?careerPackRoom(active.record):null};localStorage.setItem(careerStorageKey,JSON.stringify(save))}catch(e){console.warn('Não foi possível guardar a carreira.',e)}}
+function careerRestoreRoom(name,data,size){let index=RM.findIndex(r=>r.name===name);if(index<0){RM.push({name,S:{...(data&&data.S||size||{W:4.6,D:4,H:2.6})},wc:data&&data.wc||'#e9e3d8',fc:data&&data.fc||'#b98b5e',items:[]});index=RM.length-1}const previous=ri;if(index!==ri)go(index);if(data&&Array.isArray(data.items))restoreDesign({...data,name});else{items.slice().forEach(g=>{scene.remove(g);(g.userData.fx||[]).forEach(f=>scene.remove(f))});items.length=0;Object.assign(S,data&&data.S||size||{W:4.6,D:4,H:2.6});room();pick(null)}const r=RM[index];r.name=name;r.S={...S};r.items=items.slice();r.wc='#'+wallM.material.color.getHexString();r.fc='#'+floor.material.color.getHexString();if(index!==previous)go(previous);rr();return index}
+if(careerSaved&&careerSaved.homeDesign)careerRestoreRoom('O Meu Quarto',careerSaved.homeDesign,{W:4.5,D:4,H:2.6});
+if(career.activeMission){const m=career.activeMission;m.roomName=m.roomName||('Cliente · '+m.client+' · '+String(m.id||'novo').slice(-4));careerRestoreRoom(m.roomName,careerSaved&&careerSaved.clientDesign,m.size)}
+function careerUpdateHud(){const li=careerLevelInfo(career.xp);document.getElementById('careerBalance').textContent='€'+Math.round(career.money).toLocaleString('pt-PT');document.getElementById('careerLevel').textContent='Nível '+li.level;document.getElementById('careerXPText').textContent=li.into+' / '+li.need+' XP';document.getElementById('careerXPBar').style.width=Math.max(0,Math.min(100,li.into/li.need*100))+'%';careerLevelStat.value.textContent=li.level;careerJobsStat.value.textContent=career.completed;careerEarnStat.value.textContent='€'+Math.round(career.totalEarned).toLocaleString('pt-PT');const home=RM.find(r=>r.name==='O Meu Quarto');homeRoomInfo.textContent=home?`${home===RM[ri]?items.length:(home.items||[]).length} objetos · o teu espaço pessoal`:'Quarto pessoal pronto para decorar';careerHomeNav.classList.toggle('active',careerPage.style.display!=='none');careerJobsNav.classList.toggle('active',jobsPage.style.display!=='none')}
+function careerUpdateCatalog(){pn.querySelectorAll('.card').forEach(card=>{const label=card.querySelector('span');if(!label)return;const name=label.textContent,level=careerItemLevel(name);card.dataset.requiredLevel=String(level);let tag=card.querySelector('.level-requirement');if(!tag){tag=document.createElement('em');tag.className='level-requirement';card.append(tag)}tag.textContent=level>careerLevel()?'🔒 Nível '+level:'Nível '+level;card.classList.toggle('locked',level>careerLevel());card.title=level>careerLevel()?`${name} · desbloqueia no nível ${level}`:`${name} · €${careerPrice(name)} · nível ${level}`})}
+function careerEvaluate(m){const data=m&&m.roomName?careerRoom(m.roomName):null,objects=data?data.items:[],names=objects.map(g=>g.userData.name),spent=objects.reduce((sum,g)=>sum+careerPrice(g.userData.name),0),requirements=(m&&Array.isArray(m.requirements)?m.requirements:[]).map(r=>{let count=0;try{const re=new RegExp(r.pattern,'i');count=names.filter(n=>re.test(n)).length}catch(_){count=0}return{label:r.label,need:r.need,count,done:count>=r.need}});return{room:data,spent,budget:m?m.budget:0,requirements,ready:!!m&&requirements.length>0&&requirements.every(r=>r.done)&&spent<=(m.budget||0)}}
+function careerBox(parent,title,cls=''){const box=document.createElement('section');box.className='career-block '+cls;const h=document.createElement('h4');h.textContent=title;box.append(h);parent.append(box);return box}
+function careerRenderHome(){homeMissionContent.textContent='';if(career.activeMission){const m=career.activeMission,ev=careerEvaluate(m),h=document.createElement('h4');h.className='mission-title';h.textContent='🛠 Trabalho em curso: '+m.title;homeMissionContent.append(h);const p=document.createElement('p');p.textContent=m.client+' · '+m.brief;homeMissionContent.append(p);const b=bt('Ver contrato e continuar',()=>careerOpenPage(jobsPage),homeMissionContent);b.className='career-primary';b.style.marginTop='8px';return}const m=career.offer;if(!m){const p=document.createElement('p');p.textContent='Gera um pedido para conhecer um novo cliente.';homeMissionContent.append(p);return}const h=document.createElement('h4');h.className='mission-title';h.textContent=m.emoji+' Novo cliente: '+m.title;homeMissionContent.append(h);const p=document.createElement('p');p.textContent=m.client+' quer '+m.brief;homeMissionContent.append(p);const meta=document.createElement('div');meta.className='mission-meta';[('Orçamento '+`€${m.budget}`),('Pagamento '+`€${m.reward}`),('+'+m.xp+' XP')].forEach(t=>{const chip=document.createElement('span');chip.className='mission-chip';chip.textContent=t;meta.append(chip)});homeMissionContent.append(meta);const row=document.createElement('div');row.className='career-actions';homeMissionContent.append(row);const accept=bt('Aceitar trabalho',careerAcceptOffer,row);accept.className='career-primary';const more=bt('Ver mais clientes',()=>careerOpenPage(jobsPage),row)}
+function careerRenderJobs(){missionContent.textContent='';missionActions.textContent='';const m=career.activeMission;if(m){const ev=careerEvaluate(m),box=careerBox(missionContent,m.emoji+' '+m.title,'mission-card'),intro=document.createElement('p');intro.className='mission-title';intro.textContent='Cliente: '+m.client;box.append(intro);const desc=document.createElement('p');desc.textContent=m.brief;box.append(desc);const meta=document.createElement('div');meta.className='mission-meta';[['Orçamento do cliente','€'+m.budget],['Pagamento final','€'+m.reward],['Adiantamento','€'+(m.advance||0)],['Recompensa','+'+m.xp+' XP'],['Estilo',m.style]].forEach(([label,value])=>{const chip=document.createElement('span');chip.className='mission-chip';chip.textContent=label+': '+value;meta.append(chip)});box.append(meta);const status=document.createElement('p');status.innerHTML='<b>Objetivos do pedido</b>';box.append(status);const list=document.createElement('div');list.className='mission-req';ev.requirements.forEach(r=>{const row=document.createElement('div');row.className='mission-req-row'+(r.done?' done':'');const label=document.createElement('span');label.textContent=(r.done?'✅ ':'⬜ ')+r.label;const count=document.createElement('b');count.textContent=r.count+' / '+r.need;row.append(label,count);list.append(row)});box.append(list);const spend=document.createElement('p');spend.textContent='Gasto: €'+ev.spent.toLocaleString('pt-PT')+' / €'+m.budget.toLocaleString('pt-PT');box.append(spend);const meter=document.createElement('div');meter.className='mission-budget';const fill=document.createElement('i');fill.style.width=Math.min(100,ev.spent/Math.max(1,m.budget)*100)+'%';if(ev.spent>m.budget)fill.classList.add('over');meter.append(fill);box.append(meter);const actions=document.createElement('div');actions.className='career-actions';box.append(actions);const resume=bt('Continuar no quarto do cliente',()=>careerResumeMission(),actions);resume.className='career-primary';const deliver=bt(ev.ready?'Entregar e receber pagamento':'Ainda faltam objetivos',careerCompleteMission,actions);deliver.disabled=!ev.ready;const abandon=bt('Abandonar trabalho',careerAbandonMission,actions);abandon.title='Perdes o adiantamento recebido';if(!ev.ready){const hint=document.createElement('p');hint.className='career-muted';hint.textContent=ev.spent>m.budget?'Reduz o custo total do projeto para respeitar o orçamento.':'Cumpre os objetivos e mantém o custo dentro do orçamento.';box.append(hint)}return}
+ const offer=career.offer||careerMakeOffer();career.offer=offer;const box=careerBox(missionContent,offer.emoji+' Pedido disponível: '+offer.title,'mission-card'),client=document.createElement('p');client.className='mission-title';client.textContent='Cliente: '+offer.client;box.append(client);const desc=document.createElement('p');desc.textContent=offer.brief;box.append(desc);const meta=document.createElement('div');meta.className='mission-meta';[['Orçamento','€'+offer.budget],['Pagamento','€'+offer.reward],['XP','+'+offer.xp],['Nível mínimo',''+offer.level],['Estilo',offer.style]].forEach(([label,value])=>{const chip=document.createElement('span');chip.className='mission-chip';chip.textContent=label+': '+value;meta.append(chip)});box.append(meta);const list=document.createElement('div');list.className='mission-req';offer.requirements.forEach(r=>{const row=document.createElement('div');row.className='mission-req-row';const label=document.createElement('span');label.textContent='⬜ '+r.label;const count=document.createElement('b');count.textContent='0 / '+r.need;row.append(label,count);list.append(row)});box.append(list);const actions=document.createElement('div');actions.className='career-actions';box.append(actions);const accept=bt('Aceitar pedido',careerAcceptOffer,actions);accept.className='career-primary';bt('Gerar outro cliente',()=>{career.offer=careerMakeOffer();careerPersist();careerRender();},actions)}
+function careerRender(){careerUpdateHud();careerUpdateCatalog();careerRenderHome();careerRenderJobs();historyList.textContent='';if(!career.history.length){const empty=document.createElement('div');empty.className='mission-empty';empty.textContent='Ainda não concluíste nenhum trabalho. O primeiro pedido está pronto.';historyList.append(empty)}else career.history.slice(0,5).forEach(h=>{const row=document.createElement('div');row.className='mission-history-row';row.textContent=`✅ ${h.title} · ${h.client} · +€${h.paid} · +${h.xp} XP`;historyList.append(row)});careerHomeNav.classList.toggle('active',careerPage.style.display!=='none');careerJobsNav.classList.toggle('active',jobsPage.style.display!=='none')}
+function careerAcceptOffer(){if(career.activeMission||!career.offer)return;const m=career.offer;career.activeMission=m;career.offer=null;m.roomName='Cliente · '+m.client+' · '+String(m.id).slice(-4).toUpperCase();m.advance=Math.min(500,Math.round(m.reward*.22));const r={name:m.roomName,S:{...m.size},wc:'#e9e3d8',fc:'#b98b5e',items:[]};RM.push(r);career.money+=m.advance;go(RM.length-1);careerPersist();careerRender();toast('Contrato aceite. Adiantamento de €'+m.advance+' recebido.')}
+function careerResumeMission(){const m=career.activeMission;if(!m)return;let i=RM.findIndex(r=>r.name===m.roomName);if(i<0){RM.push({name:m.roomName,S:{...m.size},wc:'#e9e3d8',fc:'#b98b5e',items:[]});i=RM.length-1}go(i);careerOpenPage(pgs['Mobília']);careerPersist();careerRender()}
+function careerCompleteMission(){const m=career.activeMission;if(!m)return;const ev=careerEvaluate(m);if(!ev.ready){toast('Ainda falta cumprir os objetivos ou respeitar o orçamento.');careerRender();return}const oldLevel=careerLevel(),bonus=Math.min(350,Math.floor(Math.max(0,m.budget-ev.spent)*.1)),paid=m.reward+bonus;career.money+=paid;career.totalEarned+=paid;career.xp+=m.xp;career.completed++;career.history.unshift({title:m.title,client:m.client,paid,xp:m.xp});career.history=career.history.slice(0,8);career.activeMission=null;career.offer=careerMakeOffer();const levelUp=careerLevel()>oldLevel;careerPersist();careerRender();toast('Trabalho entregue: +€'+paid+' e +'+m.xp+' XP'+(levelUp?' · Subiste de nível!':''))}
+function careerAbandonMission(){if(!career.activeMission)return;if(!confirm('Abandonar este trabalho? O adiantamento não será devolvido.'))return;const m=career.activeMission;career.activeMission=null;career.offer=careerMakeOffer();careerPersist();careerRender();toast('Trabalho de '+m.client+' abandonado.')}
+function careerShowHome(){const i=RM.findIndex(r=>r.name==='O Meu Quarto');if(i>=0)go(i);careerOpenPage(careerPage);careerPersist();careerRender()}
+careerHomeNav.onclick=careerShowHome;
+careerJobsNav.onclick=()=>{careerOpenPage(jobsPage);careerRender()};
+function careerCatalogPurchase(e){const card=e.target.closest('#pn .card');if(!card)return;const label=card.querySelector('span');if(!label)return;const name=label.textContent,required=careerItemLevel(name),cost=careerPrice(name);if(careerLevel()<required){e.preventDefault();e.stopImmediatePropagation();toast(name+' desbloqueia no nível '+required+'.');return}if(career.money<cost){e.preventDefault();e.stopImmediatePropagation();toast('Saldo insuficiente: precisas de €'+cost+'.');return}const mission=career.activeMission&&career.activeMission.roomName===RM[ri].name?career.activeMission:null;if(mission){const ev=careerEvaluate(mission);if(ev.spent+cost>mission.budget){e.preventDefault();e.stopImmediatePropagation();toast('Esse item ultrapassa o orçamento do cliente.');return}}career.money-=cost;careerPersist();careerUpdateHud();toast(name+' comprado por €'+cost+'.');setTimeout(()=>{careerPersist();careerRender()},0)}
+pn.addEventListener('click',careerCatalogPurchase,true);
+const careerBaseGo=go;go=function(k){careerBaseGo(k);careerUpdateHud();careerRender();careerPersist()};
+const roomDeleteButton=[...pn.querySelectorAll('button')].find(b=>b.textContent==='🗑 Apagar divisão');if(roomDeleteButton)roomDeleteButton.addEventListener('click',e=>{if(RM[ri]&&RM[ri].name==='O Meu Quarto'){e.stopImmediatePropagation();toast('O Meu Quarto é a base da carreira e não pode ser apagado.')}},true);
+const careerDelButton=sd.querySelector('button[aria-label="Fechar propriedades do objeto"]');
+delBtn.addEventListener('click',()=>setTimeout(()=>{careerPersist();careerRender()},0));lstEl.addEventListener('click',()=>setTimeout(()=>{careerPersist();careerRender()},0));document.addEventListener('keydown',e=>{if(e.key==='Delete'||e.key==='Backspace')setTimeout(()=>{careerPersist();careerRender()},0)});
+if(!career.activeMission&&!career.offer)career.offer=careerMakeOffer();careerRender();careerPage.b.click();document.getElementById("careerFallback").hidden=true;careerPersist();
+window.addEventListener('beforeunload',careerPersist);setInterval(careerPersist,8000);
+})();
+
+</script>
+<script>
 (()=>{
  let installPrompt=null;
  const btn=document.getElementById('pwaInstallBtn'), modal=document.getElementById('pwaHelp'), text=document.getElementById('pwaHelpText');
+  const actions=document.getElementById('headerActions');if(btn&&actions)actions.append(btn);
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;btn.style.display='block';});
  btn.addEventListener('click',async()=>{
   if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(_){}installPrompt=null;return;}

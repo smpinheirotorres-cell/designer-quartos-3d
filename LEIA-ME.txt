@@ -1,0 +1,5 @@
+Designer de Quartos 3D — versão com instalação PWA
+
+Carrega estes quatro ficheiros para a raiz do repositório GitHub Pages, substituindo o index.html existente e adicionando os outros três: index.html, manifest.webmanifest, sw.js e icon-512.png.
+
+Depois de publicar, espera alguns minutos e abre o site. No iPhone, usa Safari > Partilhar > Adicionar ao ecrã principal. O botão “Instalar app” dentro do site mostra instruções no iPhone e pode abrir a instalação automática em navegadores compatíveis.

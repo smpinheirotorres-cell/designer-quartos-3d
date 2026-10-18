@@ -1,0 +1,20 @@
+{
+  "id": "./",
+  "name": "Designer de Quartos 3D",
+  "short_name": "Designer Quartos 3D",
+  "description": "Cria e organiza o teu quarto em 3D.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#e9eef3",
+  "theme_color": "#20a99c",
+  "icons": [
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

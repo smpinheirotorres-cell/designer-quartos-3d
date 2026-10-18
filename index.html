@@ -1,4 +1,11 @@
 <!DOCTYPE html><html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no"><title>Designer de Quartos 3D</title>
+<meta name="theme-color" content="#20a99c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Designer Quartos 3D">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="512x512" href="./icon-512.png">
+<link rel="apple-touch-icon" href="./icon-512.png">
 <style>
 :root{--bg:#e9eef3;--pn:#fbfaf7;--fg:#1d2a33;--bd:#cfd8de;--ac:#0e8a7d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#10161b;--pn:#182027;--fg:#e4ebf0;--bd:#2c3943;--ac:#3fc9b8;color-scheme:dark}}
@@ -688,4 +695,29 @@ const petClk=new THREE.Clock();let petWarn=0;
 const petRow=document.createElement('div');petRow.style.cssText='display:none;gap:6px;margin:8px 0 2px';sd.appendChild(petRow);window.petRowEl=petRow;
 bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',()=>{unlockPA();voice(cur,false)},petRow).style.flex='1';
 const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBtn.textContent='🐾 Sons dos animais: '+(petSnd?'ligados':'desligados')},ambientUI);petSndBtn.style.cssText='width:100%;margin-top:8px;font-size:12px';
-</script></body></html>
+</script>
+<style>
+#pwaInstallBtn{position:fixed;z-index:99999;top:10px;right:10px;padding:9px 12px;border:2px solid #fff8;border-radius:14px;background:#087f75;color:white;font:700 13px system-ui,sans-serif;box-shadow:0 3px 12px #0004;cursor:pointer}
+#pwaHelp{position:fixed;z-index:100000;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;font:16px system-ui,sans-serif}
+#pwaHelp .card{max-width:360px;background:#fff;color:#182027;border-radius:18px;padding:22px;box-shadow:0 10px 40px #0005;display:block;text-align:left}
+#pwaHelp h2{margin:0 0 12px;font-size:21px;color:#087f75}#pwaHelp p{line-height:1.45}#pwaHelp button{margin-top:8px;background:#087f75;color:#fff;border:0;padding:10px 14px;border-radius:10px}
+</style>
+<button id="pwaInstallBtn" type="button">⬇ Instalar app</button>
+<div id="pwaHelp" role="dialog" aria-modal="true"><div class="card"><h2>Instalar Designer de Quartos 3D</h2><p id="pwaHelpText">No iPhone: abre este site no Safari, toca em Partilhar e escolhe «Adicionar ao ecrã principal».</p><button id="pwaClose" type="button">Fechar</button></div></div>
+<script>
+(()=>{
+ let installPrompt=null;
+ const btn=document.getElementById('pwaInstallBtn'), modal=document.getElementById('pwaHelp'), text=document.getElementById('pwaHelpText');
+ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;btn.style.display='block';});
+ btn.addEventListener('click',async()=>{
+  if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(_){}installPrompt=null;return;}
+  const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  text.textContent=ios?'No iPhone: abre este site no Safari, toca no botão Partilhar (quadrado com seta para cima), escolhe «Adicionar ao ecrã principal» e confirma em «Adicionar».':'Se o navegador não mostrar a instalação automática, abre o menu do navegador e escolhe «Instalar app» ou «Adicionar ao ecrã inicial».';
+  modal.style.display='flex';
+ });
+ document.getElementById('pwaClose').addEventListener('click',()=>modal.style.display='none');
+ modal.addEventListener('click',e=>{if(e.target===modal)modal.style.display='none'});
+ if('serviceWorker' in navigator && location.protocol.startsWith('http')) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+})();
+</script>
+</body></html>

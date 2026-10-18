@@ -384,7 +384,9 @@ Object.assign(CAT,{
 });
 function tint(g,c){g.userData.col=c;g.traverse(o=>{if(o.isLight)o.color.set(c);else if(o.userData.glow){o.material.color.set(c);o.material.emissive.set(c)}})}
 function bbox(g){g.updateMatrixWorld(true);const b=new THREE.Box3(),t=new THREE.Box3();g.traverse(o=>{if(o.isMesh&&o.geometry&&!o.userData.ol&&!o.userData.hit){if(!o.geometry.boundingBox)o.geometry.computeBoundingBox();t.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld);b.union(t)}});return b}
-function place(g){const u=g.userData,{W,D}=S,c=(v,m)=>Math.max(-m,Math.min(m,v)),wl=CAT[u.name]&&CAT[u.name][0]=='w';if(!wl&&u.wall!=null)u.wall=null;
+function place(g){const u=g.userData,{W,D,H}=S,c=(v,m)=>Math.max(-m,Math.min(m,v)),wl=CAT[u.name]&&CAT[u.name][0]=='w';if(!wl&&u.wall!=null)u.wall=null;
+ const ceilingItems=['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'];
+ if(ceilingItems.includes(u.name)){g.position.y=u.y;g.updateMatrixWorld(true);const cb=bbox(g);if(isFinite(cb.max.y))u.y+=H-.025-cb.max.y;g.position.y=u.y;u.fall=false;}
  if(u.wall==null)g.position.set(c(g.position.x,W/2-.03),u.fall?g.position.y:u.y,c(g.position.z,D/2-.03));
  else{const w=u.wall,t=u.t=c(u.t,(w<2?W:D)/2-.05),[x,z]=[[t,-D/2+.025],[t,D/2-.025],[-W/2+.025,t],[W/2-.025,t]][w];g.position.set(x,u.y,z);g.rotation.y=[0,Math.PI,Math.PI/2,-Math.PI/2][w]}
  // mantém o objeto inteiro dentro do quarto (nada atravessa as paredes)
@@ -451,7 +453,7 @@ const delBtn=bt('🗑 Apagar',del);
 P=pn;
 function pal(g){sw.textContent='';const u=g.userData;if(!u.pal){const m={};g.traverse(o=>{if(o.isMesh&&!o.userData.glow&&!o.userData.ol){const k='#'+o.material.color.getHexString();(m[k]=m[k]||[]).push(o.material)}});u.pal=Object.entries(m).slice(0,8)}
  const t=ce('span',sw);t.textContent='Cores';t.style.width='100%';u.pal.forEach(e=>{const i=ce('input',sw);i.type='color';i.value=e[0];i.title='Mudar cor';i.oninput=()=>{e[0]=i.value;e[1].forEach(x=>{x.color.set(i.value);if(x.emissive.getHex())x.emissive.set(i.value)})}})}
-function pick(g){cur=g;lst();sd.style.display=g?'block':'none';sel.visible=!!g;if(!g)return;const u=g.userData;nm.textContent=u.name;if(window.petRowEl)window.petRowEl.style.display=u.pet?'flex':'none';hS.set(u.y);sS.set(g.scale.x);cc.style.display=u.tint?'flex':'none';if(u.col)cc.i.value=u.col;pS.parentNode.style.display=zS.parentNode.style.display=u.proj?'flex':'none';if(u.proj){pS.set(u.pitch);zS.set(u.zoom)}pal(g);ms.value=u.mat||'Original';ts.set(u.mk??.5);sel.setFromObject(g)}
+function pick(g){cur=g;lst();sd.style.display=g?'block':'none';sel.visible=!!g;if(!g)return;const u=g.userData;nm.textContent=u.name;if(window.petRowEl)window.petRowEl.style.display=u.pet?'flex':'none';if(typeof floorLedBtn!=='undefined')floorLedBtn.style.display=u.name==='Fita LED'?'block':'none';hS.set(u.y);sS.set(g.scale.x);cc.style.display=u.tint?'flex':'none';if(u.col)cc.i.value=u.col;pS.parentNode.style.display=zS.parentNode.style.display=u.proj?'flex':'none';if(u.proj){pS.set(u.pitch);zS.set(u.zoom)}pal(g);ms.value=u.mat||'Original';ts.set(u.mk??.5);sel.setFromObject(g)}
 function putOnShelf(){
  if(!cur)return;
  const blocked=/cama|beliche|sofá|sofa|roupeiro|armário|armario|secretária|secretaria|mesa|mesas|cadeira|cadeiras|poltrona|chaise|banco|bancos|aparador|móvel|moveis|móveis|mobília|mobilia|cómoda|comoda|estante|prateleira|tapete|frigorífico|frigorifico|máquina de lavar|maquina de lavar|bancada|ilha de cozinha|fogão|fogao|lavatório|lavatorio|sanita|banheira|duche|bicicleta|estendal|espreguiçadeira/i;
@@ -468,6 +470,7 @@ function putOnShelf(){
 
 const moreBtn=bt('⋯',()=>{const open=extra.style.display==='block';extra.style.display=open?'none':'block';moreBtn.title=open?'Ver mais opções':'Ocultar opções';moreBtn.setAttribute('aria-label',moreBtn.title)});moreBtn.id='moreOptions';moreBtn.title='Ver mais opções';const selHeader=ce('div',sd);selHeader.id='selHeader';selHeader.append(nm,moreBtn);const extra=ce('div',sd);extra.id='extraOptions';extra.style.display='none';
 const shelfBtn=bt('📚 Colocar na estante',putOnShelf,extra);shelfBtn.style.width='100%';shelfBtn.style.margin='2px 0 6px';
+const floorLedBtn=bt('↘ Pôr fita LED no chão',()=>{if(!cur||cur.userData.name!=='Fita LED')return;const g=cur,u=g.userData;u.wall=null;u.t=null;u.fall=false;g.rotation.y=0;const before=bbox(g);const bottomOffset=before.min.y-g.position.y;u.y=.012-bottomOffset;g.position.y=u.y;place(g);g.position.y=u.y;u.fall=false;hS.set(u.y);sel.setFromObject(g);lst() },extra);floorLedBtn.style.cssText='display:none;width:100%;margin:2px 0 6px;padding:8px;border-radius:8px;background:#5b35a6;color:white;border:0;font-weight:600';
 [rw,hS.parentNode,sS.parentNode,pS.parentNode,zS.parentNode,cc,sw,ms,ts.parentNode,delBtn].filter(Boolean).forEach(n=>{if(n.parentNode===sd)extra.append(n)});
 const tabs=ce('div',pn),pgs={};tabs.className='tabs';
 function pg(n,i){const d=ce('div',pn);d.style.display='none';const b=bt(i,()=>{const o=pgs[n].style.display=='none';for(const k in pgs){const s=o&&k==n;pgs[k].style.display=s?'':'none';pgs[k].b.classList.toggle('on',s)}pn.classList.toggle('shut',!o)},tabs);b.title=n;d.b=b;pgs[n]=d;return d}
@@ -511,10 +514,10 @@ el.addEventListener('pointermove',e=>{if(!drag)return;ndc(e);if(!ray.ray.interse
  if(wl){if(d[wi]<snap){u.wall=wi;u.t=wi<2?x:z;drag.position.set(x,u.y,z)}else{u.wall=null;drag.position.set(x,u.y,z)}}
  else{u.wall=null;drag.position.set(x,u.y,z);const bb=bbox(drag),e=[bb.min.z+D/2,D/2-bb.max.z,bb.min.x+W/2,W/2-bb.max.x],k=e.indexOf(Math.min(...e));if(e[k]<.12){const r=[0,Math.PI,Math.PI/2,-Math.PI/2][k];if(Math.abs(Math.sin((drag.rotation.y-r)/2))>1e-3)drag.rotation.y=r}}
  place(drag)});
-function snapToSurface(g){if(!g||g.userData.wall!=null)return;const u=g.userData,up=new THREE.Vector3(0,1,0),origin=new THREE.Vector3(g.position.x,10,g.position.z),down=new THREE.Vector3(0,-1,0),caster=new THREE.Raycaster(origin,down,0,20);const candidates=items.filter(o=>o!==g&&o.userData.wall==null);let hits=caster.intersectObjects(candidates,true),top=null;for(const hit of hits){if(!hit.face||hit.object.userData.hit)continue;const normal=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);if(normal.dot(up)>.65&&hit.point.y>.025&&(!top||hit.point.y>top.point.y))top=hit;}const box=bbox(g);const bottomOffset=box.min.y-g.position.y;u.y=top?top.point.y-bottomOffset+.012:Math.max(.012,-bottomOffset+.012);const y0=g.position.y;place(g);if(Math.abs(y0-u.y)>.01){g.position.y=y0;u.fall=true}if(g===cur)hS.set(u.y)}
+function snapToSurface(g){if(!g)return;const u=g.userData;if(['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'].includes(u.name)){u.fall=false;place(g);if(g===cur)hS.set(u.y);return;}/* Luzes decorativas nunca entram na rotina de queda: guardar a altura final mesmo quando estão presas à parede. */if(['Néon','Luzes de fada','Fita LED','Barra RGB','Candeeiro de parede'].includes(u.name)){u.y=g.position.y;u.fall=false;place(g);g.position.y=u.y;if(g===cur)hS.set(u.y);return}if(u.wall!=null)return;const up=new THREE.Vector3(0,1,0),origin=new THREE.Vector3(g.position.x,10,g.position.z),down=new THREE.Vector3(0,-1,0),caster=new THREE.Raycaster(origin,down,0,20);const candidates=items.filter(o=>o!==g&&o.userData.wall==null);let hits=caster.intersectObjects(candidates,true),top=null;for(const hit of hits){if(!hit.face||hit.object.userData.hit)continue;const normal=hit.face.normal.clone().transformDirection(hit.object.matrixWorld);if(normal.dot(up)>.65&&hit.point.y>.025&&(!top||hit.point.y>top.point.y))top=hit;}const box=bbox(g);const bottomOffset=box.min.y-g.position.y;u.y=top?top.point.y-bottomOffset+.012:Math.max(.012,-bottomOffset+.012);const y0=g.position.y;place(g);if(Math.abs(y0-u.y)>.01){g.position.y=y0;u.fall=true}if(g===cur)hS.set(u.y)}
 function finishPointer(e){if(drag){const moved=drag;drag=null;if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4&&moved.userData.pet)petIt(moved);try{if(e.pointerId!=null&&el.hasPointerCapture(e.pointerId))el.releasePointerCapture(e.pointerId)}catch(_){}snapToSurface(moved);ctl.enabled=true;dn=null;}else if(e.type==='pointerup'&&dn&&Math.hypot(e.clientX-dn[0],e.clientY-dn[1])<4){ndc(e);const hh=bestHit();let gg=hh&&hh.object;while(gg&&!gg.userData.item)gg=gg.parent;if(gg&&gg.userData.pet)petIt(gg);else pick(null)}dn=null;}
 document.addEventListener('selectstart',e=>{const n=e.target.nodeType===3?e.target.parentElement:e.target;if(!n||!/^(INPUT|TEXTAREA)$/.test(n.tagName))e.preventDefault()});el.addEventListener('dblclick',e=>e.preventDefault());el.addEventListener('contextmenu',e=>e.preventDefault());
-(function fallLoop(){requestAnimationFrame(fallLoop);items.forEach(g=>{const u=g.userData;if(!u.fall)return;const d=u.y-g.position.y;if(Math.abs(d)<.004){g.position.y=u.y;u.fall=false}else g.position.y+=d*.3;if(g===cur)sel.setFromObject(g)})})();
+(function fallLoop(){requestAnimationFrame(fallLoop);items.forEach(g=>{const u=g.userData;if(['Candeeiro de teto','Foco de teto','Projetor de teto','Lustre'].includes(u.name)){u.fall=false;return}if(['Néon','Luzes de fada','Fita LED','Barra RGB','Candeeiro de parede'].includes(u.name)){u.fall=false;return}if(!u.fall)return;const d=u.y-g.position.y;if(Math.abs(d)<.004){g.position.y=u.y;u.fall=false}else g.position.y+=d*.3;if(g===cur)sel.setFromObject(g)})})();
 el.addEventListener('pointerup',finishPointer);
 el.addEventListener('pointercancel',finishPointer);
 el.addEventListener('lostpointercapture',e=>{if(drag){const moved=drag;drag=null;snapToSurface(moved);ctl.enabled=true;dn=null}});
@@ -618,9 +621,8 @@ Object.keys(TRACKS).forEach(k=>{const o=ce('option',musicSelect);o.value=k;o.tex
 const offOpt=ce('option',musicSelect);offOpt.value='off';offOpt.textContent='Sem música';
 ambientUI.appendChild(musicSelect);
 const musicRow=ce('div',ambientUI);musicRow.style.cssText='display:flex;gap:6px';
-const playBtn=bt('▶ Reproduzir',async()=>{if(chillOn){stopChill();return}await unlockAllAudio();if(!chillOn&&AC&&AC.state==='running'&&musicSelect.value!=='off')startChill()},musicRow);playBtn.style.flex='1';
+const playBtn=bt('▶ Reproduzir',()=>toggleChill(),musicRow);playBtn.style.flex='1';
 const stopBtn=bt('■ Parar',()=>stopChill(),musicRow);stopBtn.style.flex='1';
-const audioUnlockBtn=bt('🔊 Ativar música e sons',()=>unlockAllAudio(),ambientUI);audioUnlockBtn.style.cssText='width:100%;margin-top:8px;font-size:13px;padding:10px;border-radius:9px';
 const hint=ce('p',ambientUI);hint.className='hint';
 function showDesc(){const T=TRACKS[musicSelect.value];hint.textContent=T?(chillOn?'A tocar: ':'')+T.name+' — '+T.desc:'Música desligada.'}
 function tick(){const T=TRACKS[activeMusic];if(!T||!chillOn)return;T.bar(AC.currentTime+.05,T.len,barN++)}
@@ -635,42 +637,9 @@ async function toggleChill(){if(chillOn){stopChill();return}if(musicSelect.value
 function stopChill(){chillOn=false;clearInterval(chillTimer);chillTimer=null;const m=master,loops=liveLoops;master=null;liveLoops=[];if(m&&AC){m.gain.cancelScheduledValues(AC.currentTime);m.gain.setTargetAtTime(0,AC.currentTime,.12);setTimeout(()=>{loops.forEach(s=>{try{s.stop()}catch(e){}});try{m.disconnect()}catch(e){}},900)}playBtn.textContent='▶ Reproduzir';showDesc()}
 musicSelect.onchange=()=>{const was=chillOn;if(was)stopChill();showDesc();if(was&&musicSelect.value!=='off')setTimeout(startChill,60)};
 showDesc();
-// Tentar iniciar a música Lo-fi automaticamente ao abrir a app.
-// Alguns navegadores bloqueiam áudio automático; nesses casos, começa no primeiro toque/clique.
-async function autoStartMusic(){
- if(chillOn||musicSelect.value==='off')return;
- try{
-  if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();
-  if(AC.state==='suspended')await AC.resume();
-  if(AC.state==='running'){startChill();return;}
- }catch(e){}
- const startAfterGesture=async()=>{
-  if(chillOn)return;
-  try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')await AC.resume();if(AC.state==='running')startChill()}catch(e){}
- };
- ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,startAfterGesture,{once:true,passive:true}));
-}
-if(document.readyState==='complete')setTimeout(autoStartMusic,400);else addEventListener('load',()=>setTimeout(autoStartMusic,400),{once:true});
 // ---- ANIMAIS: comportamento, sons e festas
 let PA=null,petSnd=true,fps=[],fpT=0,ptBuf=null;
-async function unlockPA(){try{if(!PA)PA=new(window.AudioContext||window.webkitAudioContext)();if(PA.state==='suspended')await PA.resume();return !!PA&&PA.state==='running'}catch(e){console.warn('Não foi possível iniciar o áudio',e);return false}}
-let audioUnlocking=null;
-async function unlockAllAudio(){
- if(audioUnlocking)return audioUnlocking;
- audioUnlocking=(async()=>{
-  try{
-   const C=window.AudioContext||window.webkitAudioContext;if(!C)throw new Error('Este navegador não suporta áudio Web Audio');
-   if(!AC)AC=new C();if(!PA)PA=new C();
-   const jobs=[];if(AC.state==='suspended')jobs.push(AC.resume());if(PA.state==='suspended')jobs.push(PA.resume());
-   await Promise.all(jobs);
-   if(AC.state==='running'&&!chillOn&&musicSelect.value!=='off')startChill();
-   petSnd=true;if(typeof petSndBtn!=='undefined'&&petSndBtn)petSndBtn.textContent='🐾 Sons dos animais: ligados';
-   audioUnlockBtn.textContent='✓ Música e sons ativados';
-   hint.textContent=chillOn?'A tocar: '+TRACKS[activeMusic].name+' — os sons dos animais também estão ativados.':'Áudio ativado. Escolhe uma música ou toca em Reproduzir.';
-   return true;
-  }catch(e){console.warn('Não foi possível ativar o áudio',e);audioUnlockBtn.textContent='Toca aqui para ativar o áudio';hint.textContent='O iPhone bloqueou o áudio. Toca novamente neste botão.';return false}
- })().finally(()=>{audioUnlocking=null});return audioUnlocking;
-}
+function unlockPA(){try{if(!PA)PA=new(window.AudioContext||window.webkitAudioContext)();if(PA.state==='suspended')PA.resume()}catch(e){}}
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,unlockPA,{passive:true}));
 function ptEnv(t,d,v){const g=PA.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);g.connect(PA.destination);return g}
 function ptOsc(type,t,f0,f1,d,v,fl){const o=PA.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+d);let n=o;if(fl){const f=PA.createBiquadFilter();f.type=fl[0];f.frequency.value=fl[1];f.Q.value=fl[2]||1;o.connect(f);n=f}n.connect(ptEnv(t,d,v));o.start(t);o.stop(t+d+.05)}
@@ -730,26 +699,22 @@ const petClk=new THREE.Clock();let petWarn=0;
  items.forEach(g=>{const p=g.userData.pet;if(!p)return;if(p.love>0)p.love-=dt;try{if(p.update)p.update(g,dt,t);else roam(g,dt,t);if(g===cur)sel.setFromObject(g)}catch(e){if(petWarn++<3)console.warn(e)}})})();
 // botões na ficha do objeto e opção de sons
 const petRow=document.createElement('div');petRow.style.cssText='display:none;gap:6px;margin:8px 0 2px';sd.appendChild(petRow);window.petRowEl=petRow;
-bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',async()=>{if(await unlockPA())voice(cur,false)},petRow).style.flex='1';
+bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',()=>{unlockPA();voice(cur,false)},petRow).style.flex='1';
 const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBtn.textContent='🐾 Sons dos animais: '+(petSnd?'ligados':'desligados')},ambientUI);petSndBtn.style.cssText='width:100%;margin-top:8px;font-size:12px';
 </script>
 <style>
-#pwaInstallBtn{position:absolute;z-index:20;top:19px;right:64px;left:auto;width:30px;height:30px;padding:0;border:1px solid #fff8;border-radius:9px;background:#087f75;color:white;font:700 16px system-ui,sans-serif;box-shadow:0 2px 7px #0004;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+#pwaInstallBtn{position:fixed;z-index:99999;top:10px;right:10px;padding:9px 12px;border:2px solid #fff8;border-radius:14px;background:#087f75;color:white;font:700 13px system-ui,sans-serif;box-shadow:0 3px 12px #0004;cursor:pointer}
 #pwaHelp{position:fixed;z-index:100000;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;font:16px system-ui,sans-serif}
 #pwaHelp .card{max-width:360px;background:#fff;color:#182027;border-radius:18px;padding:22px;box-shadow:0 10px 40px #0005;display:block;text-align:left}
 #pwaHelp h2{margin:0 0 12px;font-size:21px;color:#087f75}#pwaHelp p{line-height:1.45}#pwaHelp button{margin-top:8px;background:#087f75;color:#fff;border:0;padding:10px 14px;border-radius:10px}
-@media(max-width:700px){#pwaInstallBtn{top:19px;right:64px;left:auto;width:30px;height:30px;font-size:16px;padding:0;border-radius:9px}}
 </style>
-<button id="pwaInstallBtn" type="button" aria-label="Instalar app" title="Instalar app">⬇</button>
+<button id="pwaInstallBtn" type="button">⬇ Instalar app</button>
 <div id="pwaHelp" role="dialog" aria-modal="true"><div class="card"><h2>Instalar Designer de Quartos 3D</h2><p id="pwaHelpText">No iPhone: abre este site no Safari, toca em Partilhar e escolhe «Adicionar ao ecrã principal».</p><button id="pwaClose" type="button">Fechar</button></div></div>
 <script>
 (()=>{
  let installPrompt=null;
  const btn=document.getElementById('pwaInstallBtn'), modal=document.getElementById('pwaHelp'), text=document.getElementById('pwaHelpText');
- const instalada = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
- if(instalada) btn.style.display='none';
- const canvasArea=document.getElementById('cv'); if(canvasArea) canvasArea.appendChild(btn);
- window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;if(!instalada)btn.style.display='block';});
+ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;btn.style.display='block';});
  btn.addEventListener('click',async()=>{
   if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(_){}installPrompt=null;return;}
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);

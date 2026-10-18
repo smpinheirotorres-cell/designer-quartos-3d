@@ -636,7 +636,7 @@ musicSelect.onchange=()=>{const was=chillOn;if(was)stopChill();showDesc();if(was
 showDesc();
 // ---- ANIMAIS: comportamento, sons e festas
 let PA=null,petSnd=true,fps=[],fpT=0,ptBuf=null;
-function unlockPA(){try{if(!PA)PA=new(window.AudioContext||window.webkitAudioContext)();if(PA.state==='suspended')PA.resume()}catch(e){}}
+async function unlockPA(){try{if(!PA)PA=new(window.AudioContext||window.webkitAudioContext)();if(PA.state==='suspended')await PA.resume();return !!PA&&PA.state==='running'}catch(e){console.warn('Não foi possível iniciar o áudio',e);return false}}
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,unlockPA,{passive:true}));
 function ptEnv(t,d,v){const g=PA.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);g.connect(PA.destination);return g}
 function ptOsc(type,t,f0,f1,d,v,fl){const o=PA.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+d);let n=o;if(fl){const f=PA.createBiquadFilter();f.type=fl[0];f.frequency.value=fl[1];f.Q.value=fl[2]||1;o.connect(f);n=f}n.connect(ptEnv(t,d,v));o.start(t);o.stop(t+d+.05)}
@@ -696,14 +696,15 @@ const petClk=new THREE.Clock();let petWarn=0;
  items.forEach(g=>{const p=g.userData.pet;if(!p)return;if(p.love>0)p.love-=dt;try{if(p.update)p.update(g,dt,t);else roam(g,dt,t);if(g===cur)sel.setFromObject(g)}catch(e){if(petWarn++<3)console.warn(e)}})})();
 // botões na ficha do objeto e opção de sons
 const petRow=document.createElement('div');petRow.style.cssText='display:none;gap:6px;margin:8px 0 2px';sd.appendChild(petRow);window.petRowEl=petRow;
-bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',()=>{unlockPA();voice(cur,false)},petRow).style.flex='1';
+bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',async()=>{if(await unlockPA())voice(cur,false)},petRow).style.flex='1';
 const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBtn.textContent='🐾 Sons dos animais: '+(petSnd?'ligados':'desligados')},ambientUI);petSndBtn.style.cssText='width:100%;margin-top:8px;font-size:12px';
 </script>
 <style>
-#pwaInstallBtn{position:fixed;z-index:99999;top:10px;right:10px;padding:9px 12px;border:2px solid #fff8;border-radius:14px;background:#087f75;color:white;font:700 13px system-ui,sans-serif;box-shadow:0 3px 12px #0004;cursor:pointer}
+#pwaInstallBtn{position:absolute;z-index:20;top:12px;right:64px;left:auto;padding:5px 8px;border:1px solid #fff8;border-radius:10px;background:#087f75;color:white;font:700 10px system-ui,sans-serif;box-shadow:0 2px 7px #0004;cursor:pointer;line-height:1.2}
 #pwaHelp{position:fixed;z-index:100000;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;font:16px system-ui,sans-serif}
 #pwaHelp .card{max-width:360px;background:#fff;color:#182027;border-radius:18px;padding:22px;box-shadow:0 10px 40px #0005;display:block;text-align:left}
 #pwaHelp h2{margin:0 0 12px;font-size:21px;color:#087f75}#pwaHelp p{line-height:1.45}#pwaHelp button{margin-top:8px;background:#087f75;color:#fff;border:0;padding:10px 14px;border-radius:10px}
+@media(max-width:700px){#pwaInstallBtn{top:12px;right:64px;left:auto;max-width:calc(100% - 120px);font-size:10px;padding:5px 7px;border-radius:9px}}
 </style>
 <button id="pwaInstallBtn" type="button">⬇ Instalar app</button>
 <div id="pwaHelp" role="dialog" aria-modal="true"><div class="card"><h2>Instalar Designer de Quartos 3D</h2><p id="pwaHelpText">No iPhone: abre este site no Safari, toca em Partilhar e escolhe «Adicionar ao ecrã principal».</p><button id="pwaClose" type="button">Fechar</button></div></div>
@@ -711,6 +712,7 @@ const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBt
 (()=>{
  let installPrompt=null;
  const btn=document.getElementById('pwaInstallBtn'), modal=document.getElementById('pwaHelp'), text=document.getElementById('pwaHelpText');
+ const canvasArea=document.getElementById('cv'); if(canvasArea) canvasArea.appendChild(btn);
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;btn.style.display='block';});
  btn.addEventListener('click',async()=>{
   if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(_){}installPrompt=null;return;}

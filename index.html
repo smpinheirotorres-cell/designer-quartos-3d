@@ -618,8 +618,9 @@ Object.keys(TRACKS).forEach(k=>{const o=ce('option',musicSelect);o.value=k;o.tex
 const offOpt=ce('option',musicSelect);offOpt.value='off';offOpt.textContent='Sem música';
 ambientUI.appendChild(musicSelect);
 const musicRow=ce('div',ambientUI);musicRow.style.cssText='display:flex;gap:6px';
-const playBtn=bt('▶ Reproduzir',()=>toggleChill(),musicRow);playBtn.style.flex='1';
+const playBtn=bt('▶ Reproduzir',async()=>{if(chillOn){stopChill();return}await unlockAllAudio();if(!chillOn&&AC&&AC.state==='running'&&musicSelect.value!=='off')startChill()},musicRow);playBtn.style.flex='1';
 const stopBtn=bt('■ Parar',()=>stopChill(),musicRow);stopBtn.style.flex='1';
+const audioUnlockBtn=bt('🔊 Ativar música e sons',()=>unlockAllAudio(),ambientUI);audioUnlockBtn.style.cssText='width:100%;margin-top:8px;font-size:13px;padding:10px;border-radius:9px';
 const hint=ce('p',ambientUI);hint.className='hint';
 function showDesc(){const T=TRACKS[musicSelect.value];hint.textContent=T?(chillOn?'A tocar: ':'')+T.name+' — '+T.desc:'Música desligada.'}
 function tick(){const T=TRACKS[activeMusic];if(!T||!chillOn)return;T.bar(AC.currentTime+.05,T.len,barN++)}
@@ -634,9 +635,42 @@ async function toggleChill(){if(chillOn){stopChill();return}if(musicSelect.value
 function stopChill(){chillOn=false;clearInterval(chillTimer);chillTimer=null;const m=master,loops=liveLoops;master=null;liveLoops=[];if(m&&AC){m.gain.cancelScheduledValues(AC.currentTime);m.gain.setTargetAtTime(0,AC.currentTime,.12);setTimeout(()=>{loops.forEach(s=>{try{s.stop()}catch(e){}});try{m.disconnect()}catch(e){}},900)}playBtn.textContent='▶ Reproduzir';showDesc()}
 musicSelect.onchange=()=>{const was=chillOn;if(was)stopChill();showDesc();if(was&&musicSelect.value!=='off')setTimeout(startChill,60)};
 showDesc();
+// Tentar iniciar a música Lo-fi automaticamente ao abrir a app.
+// Alguns navegadores bloqueiam áudio automático; nesses casos, começa no primeiro toque/clique.
+async function autoStartMusic(){
+ if(chillOn||musicSelect.value==='off')return;
+ try{
+  if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();
+  if(AC.state==='suspended')await AC.resume();
+  if(AC.state==='running'){startChill();return;}
+ }catch(e){}
+ const startAfterGesture=async()=>{
+  if(chillOn)return;
+  try{if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')await AC.resume();if(AC.state==='running')startChill()}catch(e){}
+ };
+ ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,startAfterGesture,{once:true,passive:true}));
+}
+if(document.readyState==='complete')setTimeout(autoStartMusic,400);else addEventListener('load',()=>setTimeout(autoStartMusic,400),{once:true});
 // ---- ANIMAIS: comportamento, sons e festas
 let PA=null,petSnd=true,fps=[],fpT=0,ptBuf=null;
 async function unlockPA(){try{if(!PA)PA=new(window.AudioContext||window.webkitAudioContext)();if(PA.state==='suspended')await PA.resume();return !!PA&&PA.state==='running'}catch(e){console.warn('Não foi possível iniciar o áudio',e);return false}}
+let audioUnlocking=null;
+async function unlockAllAudio(){
+ if(audioUnlocking)return audioUnlocking;
+ audioUnlocking=(async()=>{
+  try{
+   const C=window.AudioContext||window.webkitAudioContext;if(!C)throw new Error('Este navegador não suporta áudio Web Audio');
+   if(!AC)AC=new C();if(!PA)PA=new C();
+   const jobs=[];if(AC.state==='suspended')jobs.push(AC.resume());if(PA.state==='suspended')jobs.push(PA.resume());
+   await Promise.all(jobs);
+   if(AC.state==='running'&&!chillOn&&musicSelect.value!=='off')startChill();
+   petSnd=true;if(typeof petSndBtn!=='undefined'&&petSndBtn)petSndBtn.textContent='🐾 Sons dos animais: ligados';
+   audioUnlockBtn.textContent='✓ Música e sons ativados';
+   hint.textContent=chillOn?'A tocar: '+TRACKS[activeMusic].name+' — os sons dos animais também estão ativados.':'Áudio ativado. Escolhe uma música ou toca em Reproduzir.';
+   return true;
+  }catch(e){console.warn('Não foi possível ativar o áudio',e);audioUnlockBtn.textContent='Toca aqui para ativar o áudio';hint.textContent='O iPhone bloqueou o áudio. Toca novamente neste botão.';return false}
+ })().finally(()=>{audioUnlocking=null});return audioUnlocking;
+}
 ['pointerdown','touchstart','keydown'].forEach(ev=>addEventListener(ev,unlockPA,{passive:true}));
 function ptEnv(t,d,v){const g=PA.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(v,t+.015);g.gain.exponentialRampToValueAtTime(.0001,t+d);g.connect(PA.destination);return g}
 function ptOsc(type,t,f0,f1,d,v,fl){const o=PA.createOscillator();o.type=type;o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+d);let n=o;if(fl){const f=PA.createBiquadFilter();f.type=fl[0];f.frequency.value=fl[1];f.Q.value=fl[2]||1;o.connect(f);n=f}n.connect(ptEnv(t,d,v));o.start(t);o.stop(t+d+.05)}
@@ -728,3 +762,4 @@ const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBt
 })();
 </script>
 </body></html>
+

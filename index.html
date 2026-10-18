@@ -644,16 +644,19 @@ function ptNz(t,d,v,ft,fq,q,lfo){if(!ptBuf){ptBuf=PA.createBuffer(1,PA.sampleRat
  const s=PA.createBufferSource(),f=PA.createBiquadFilter(),g=ptEnv(t,d,v);s.buffer=ptBuf;s.loop=true;f.type=ft;f.frequency.value=fq;f.Q.value=q||1;s.connect(f);
  if(lfo){const m=PA.createGain();m.gain.value=.5;const l=PA.createOscillator(),lg=PA.createGain();l.frequency.value=lfo;lg.gain.value=.5;l.connect(lg);lg.connect(m.gain);f.connect(m);m.connect(g);l.start(t);l.stop(t+d+.05)}else f.connect(g);s.start(t);s.stop(t+d+.05)}
 const SND={
-dog(p,soft){const t=PA.currentTime,v=soft?.12:.26;[0,.2].forEach((d,i)=>{if(soft&&i)return;ptOsc('sawtooth',t+d,420*p,190*p,.15,v,['lowpass',1500*p]);ptOsc('square',t+d,210*p,110*p,.12,v*.35,['lowpass',800]);ptNz(t+d,.07,v*.3,'bandpass',1300,1)})},
-cat(p){const t=PA.currentTime;ptOsc('sawtooth',t,430*p,880*p,.22,.16,['bandpass',1500,2.5]);ptOsc('sawtooth',t+.22,880*p,520*p,.4,.16,['bandpass',1200,2.5])},
-purr(){ptNz(PA.currentTime,2.2,.5,'lowpass',200,1,26)},
-rabbit(){const t=PA.currentTime;ptNz(t,.05,.05,'highpass',3000);ptOsc('sine',t,2200,1500,.07,.04)},
-hamster(){const t=PA.currentTime;[0,.1,.2].forEach(d=>ptOsc('sine',t+d,3200,4200,.06,.05))},
-gpig(){const t=PA.currentTime;[0,.28].forEach(d=>{ptOsc('triangle',t+d,1100,2100,.12,.08);ptOsc('triangle',t+d+.12,2100,1500,.14,.08)})},
-turtle(){ptNz(PA.currentTime,.5,.06,'highpass',2500)},
-bird(){const t=PA.currentTime;for(let i=0;i<4;i++){const f=rn(2600,3800);ptOsc('sine',t+i*.11,f,f*1.4,.08,.06)}},
-parrot(){const t=PA.currentTime;ptOsc('sawtooth',t,1100,700,.18,.1,['bandpass',1600,3]);ptOsc('sawtooth',t+.22,700,1300,.2,.1,['bandpass',1500,3]);ptOsc('sine',t+.5,1500,2100,.25,.05)},
-fish(){const t=PA.currentTime;for(let i=0;i<3;i++)ptOsc('sine',t+i*.12,300+i*80,700+i*120,.1,.07)}};
+// Sons sintetizados em camadas: mais variação de tom, ruído filtrado e pequenos intervalos.
+// São aproximações sonoras; não são gravações reais de animais.
+dog(p,soft){const t=PA.currentTime,v=soft?.10:.22;const n=soft?1:(Math.random()<.35?3:2);for(let i=0;i<n;i++){const d=i*(.16+Math.random()*.07),f=rn(300,470)*p;ptOsc('sawtooth',t+d,f,f*rn(.36,.58),.17,v,['lowpass',rn(850,1450)*p]);ptOsc('triangle',t+d, f*.48,f*.24,.13,v*.48,['lowpass',650]);ptNz(t+d,.095,v*.24,'bandpass',rn(650,1150),2)}},
+cat(p){const t=PA.currentTime, f=rn(390,510)*p, dur=rn(.32,.48);ptOsc('sawtooth',t,f,f*rn(1.55,2.0),dur*.52,.10,['bandpass',rn(950,1450),3]);ptOsc('triangle',t+dur*.45,f*1.65,f*rn(.72,.95),dur*.7,.09,['bandpass',rn(700,1150),2]);ptOsc('sine',t,f*.5,f*.85,dur*.9,.035,['lowpass',900])},
+purr(){const t=PA.currentTime;for(let i=0;i<7;i++){const d=i*.29;ptNz(t+d,.25,.16,'lowpass',rn(130,210),1,rn(22,31));ptOsc('triangle',t+d, rn(24,34),rn(28,39),.22,.045,['lowpass',180])}},
+rabbit(){const t=PA.currentTime;ptNz(t,.055,.035,'highpass',rn(2600,3800),1);if(Math.random()<.5)ptOsc('sine',t+.08, rn(1700,2300),rn(1100,1600),.07,.025)},
+hamster(){const t=PA.currentTime;for(let i=0;i<3+Math.floor(Math.random()*3);i++){const d=i*rn(.055,.095),f=rn(2800,4300);ptOsc('sine',t+d,f,f*rn(1.08,1.35),rn(.045,.075),.035);ptNz(t+d,.035,.012,'bandpass',rn(3000,5000),1)}},
+gpig(){const t=PA.currentTime,f=rn(850,1250);[0,.22,.52].forEach((d,i)=>{ptOsc('triangle',t+d,f*(i===1?1.25:1),f*rn(1.25,1.8),.16,.065,['bandpass',rn(900,1700),2]);ptOsc('sine',t+d+.04,f*1.7,f*1.25,.12,.035)})},
+turtle(){const t=PA.currentTime;ptNz(t,.12,.025,'highpass',rn(1800,3000),1)},
+bird(){const t=PA.currentTime,notes=3+Math.floor(Math.random()*3);for(let i=0;i<notes;i++){const d=i*rn(.075,.14),f=rn(2100,3600);ptOsc('sine',t+d,f,f*rn(1.25,1.7),rn(.07,.12),.045);if(Math.random()<.55)ptOsc('sine',t+d+.025,f*2,f*2.2,.045,.012)}},
+parrot(){const t=PA.currentTime,f=rn(750,1200);[0,.18,.39].forEach((d,i)=>{ptOsc('sawtooth',t+d,f*(i===1?1.25:1),f*rn(.62,1.45),rn(.13,.23),.065,['bandpass',rn(950,1900),3]);ptNz(t+d,.06,.018,'bandpass',rn(1200,2200),2)})},
+fish(){const t=PA.currentTime;for(let i=0;i<3;i++){const f=rn(260,430)+i*65;ptOsc('sine',t+i*.13,f,f*rn(1.5,2.2),.12,.04);}}
+};
 function voice(g,happy){if(!petSnd||!PA||PA.state!=='running')return;const p=g.userData.pet;if(!p)return;try{
  if(p.snd==='cat'){if(happy){SND.purr();if(Math.random()<.5)setTimeout(()=>SND.cat(p.pitch),500)}else SND.cat(p.pitch)}
  else if(p.snd==='dog')SND.dog(p.pitch,happy&&Math.random()<.5);else SND[p.snd](p.pitch)}catch(e){}}

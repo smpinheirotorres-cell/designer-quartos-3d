@@ -700,11 +700,11 @@ bt('🤚 Fazer festas',()=>petIt(cur),petRow).style.flex='1';bt('🔊 Chamar',as
 const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBtn.textContent='🐾 Sons dos animais: '+(petSnd?'ligados':'desligados')},ambientUI);petSndBtn.style.cssText='width:100%;margin-top:8px;font-size:12px';
 </script>
 <style>
-#pwaInstallBtn{position:absolute;z-index:20;top:16px;right:64px;left:auto;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid #fff8;border-radius:10px;background:#087f75;color:white;font:700 19px system-ui,sans-serif;box-shadow:0 2px 7px #0004;cursor:pointer;line-height:1}
+#pwaInstallBtn{position:absolute;z-index:20;top:19px;right:64px;left:auto;width:30px;height:30px;padding:0;border:1px solid #fff8;border-radius:9px;background:#087f75;color:white;font:700 16px system-ui,sans-serif;box-shadow:0 2px 7px #0004;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
 #pwaHelp{position:fixed;z-index:100000;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:20px;font:16px system-ui,sans-serif}
 #pwaHelp .card{max-width:360px;background:#fff;color:#182027;border-radius:18px;padding:22px;box-shadow:0 10px 40px #0005;display:block;text-align:left}
 #pwaHelp h2{margin:0 0 12px;font-size:21px;color:#087f75}#pwaHelp p{line-height:1.45}#pwaHelp button{margin-top:8px;background:#087f75;color:#fff;border:0;padding:10px 14px;border-radius:10px}
-@media(max-width:700px){#pwaInstallBtn{top:16px;right:64px;left:auto;width:36px;height:36px;padding:0;font-size:19px;border-radius:10px}}
+@media(max-width:700px){#pwaInstallBtn{top:19px;right:64px;left:auto;width:30px;height:30px;font-size:16px;padding:0;border-radius:9px}}
 </style>
 <button id="pwaInstallBtn" type="button" aria-label="Instalar app" title="Instalar app">⬇</button>
 <div id="pwaHelp" role="dialog" aria-modal="true"><div class="card"><h2>Instalar Designer de Quartos 3D</h2><p id="pwaHelpText">No iPhone: abre este site no Safari, toca em Partilhar e escolhe «Adicionar ao ecrã principal».</p><button id="pwaClose" type="button">Fechar</button></div></div>
@@ -712,8 +712,10 @@ const petSndBtn=bt('🐾 Sons dos animais: ligados',()=>{petSnd=!petSnd;petSndBt
 (()=>{
  let installPrompt=null;
  const btn=document.getElementById('pwaInstallBtn'), modal=document.getElementById('pwaHelp'), text=document.getElementById('pwaHelpText');
+ const instalada = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+ if(instalada) btn.style.display='none';
  const canvasArea=document.getElementById('cv'); if(canvasArea) canvasArea.appendChild(btn);
- window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;btn.style.display='block';});
+ window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installPrompt=e;if(!instalada)btn.style.display='block';});
  btn.addEventListener('click',async()=>{
   if(installPrompt){installPrompt.prompt();try{await installPrompt.userChoice;}catch(_){}installPrompt=null;return;}
   const ios=/iphone|ipad|ipod/i.test(navigator.userAgent);
